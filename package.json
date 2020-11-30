@@ -1,0 +1,19 @@
+{
+  "name": "effects.js",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/nythrox/effects.js.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/nythrox/effects.js/issues"
+  },
+  "homepage": "https://github.com/nythrox/effects.js#readme"
+}
