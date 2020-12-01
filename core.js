@@ -18,8 +18,8 @@ const findHandler = (key) => (arr) => {
  */
 export const of = (value) => (context) => void context.then(value);
 
-export const chain = (chainer) => (effect) => (context) =>
-  void effect({
+export const chain = (chainer) => (action) => (context) =>
+  void action({
     prev: context,
     handlers: context.handlers,
     then: (e) => {
@@ -34,7 +34,7 @@ export const chain = (chainer) => (effect) => (context) =>
  * @param then callback to be called after the program finishes
  */
 export const run = (action) => (then) =>
-  void effect({
+  void action({
     prev: undefined,
     handlers: [],
     then,
