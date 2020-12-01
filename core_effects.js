@@ -1,5 +1,5 @@
+import { handler, of, effect } from "./core";
 export const waitFor = effect("async");
-export const foreach = effect("list");
 
 export const handlePromise = handler({
   return: (res) => of(Promise.resolve(res)),
@@ -9,6 +9,8 @@ export const handlePromise = handler({
     });
   },
 });
+
+export const foreach = effect("list");
 
 export const handleForeach = handler({
   return: (res) => of([res]),
@@ -24,3 +26,12 @@ export const handleForeach = handler({
     flatmap([], value);
   },
 });
+
+export const trycatch = (program) => (oncatch) =>
+  handler({
+    exn(value, exec, resume, then) {
+      exec(oncatch(value))(then);
+    },
+  })(program);
+
+export const raise = effect("exn");
