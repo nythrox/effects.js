@@ -32,7 +32,7 @@ export {
   makeGeneratorDo,
 } from "./utils";
 export {
-  waitFor,
+  wait,
   withPromise,
   cps,
   withCps,

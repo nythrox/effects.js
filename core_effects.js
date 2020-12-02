@@ -18,7 +18,7 @@ export const withIo = handler({
 })
 
 
-export const waitFor = effect("async");
+export const wait = effect("async");
 export const withPromise = handler({
   return: (res) => of(Promise.resolve(res)),
   // async(value, exec, resume, then) {
@@ -102,3 +102,4 @@ export const withCps = handler({
 //     then(newStream);
 //   }
 // });
+
