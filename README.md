@@ -60,12 +60,23 @@
   
 ```
 
+### Actions (Action monad)
+
+### Effects
+
+### Handlers
+
 
 #### DISCLAIMER: 
 This implementation is not stack-safe. I'm working on making the interpreter stack-safe, but it is doubtful whether or not all handlers can truly be stack-safe.
 
+### Assistance is welcome
+Feel free to create PRs or issues about bugs, suggestions, code review, questions, similar ideas, improvements, etc. You can also get in contact with <a href="https://github.com/nythrox"> me</a>, don't be shy to send a message!
 
 ### TODO:
 - Make the interpreter stack-safe
 - Make the current generator do notation stack-safe
+- Benchmarks
 - Make a do notation babel plugin to compile the generator into chains
+- Make a typescript version
+- Find ways to make the handlers stack-safe
