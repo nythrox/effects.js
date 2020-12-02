@@ -103,3 +103,15 @@ export const withCps = handler({
 //   }
 // });
 
+
+export const dependency = effect("reader");
+export const reader = (dependencyMap) =>
+  handler({
+    reader: genHandler(function* (key, resume) {
+      const value = dependencyMap[key];
+      if (value) {
+        return yield resume(value);
+      }
+      return yield dependency(key);
+    })
+  });

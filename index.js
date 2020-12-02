@@ -43,6 +43,8 @@ export {
   trycatch,
   io,
   withIo,
+  reader,
+  dependency
 } from "./core_effects";
 // const withTimesTwo = handler({
 // timesTwo: (val, exec, resume, then) => {
