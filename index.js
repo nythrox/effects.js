@@ -1,16 +1,17 @@
 import { interpret } from "./core";
-import { withCps } from "./core_effects";
+import { withCps, withIo } from "./core_effects";
 /**
  * Runs a program (action monad) and returns a value. Might throw an error if there are no handlers found for a effect. Automatically comes with a callback event handler
  * @param action
  * @param then callback to be called after the program finishes
  */
+
 export const run = (then) => (action) =>
   interpret({
     prev: undefined,
     handlers: [],
-    then: (fn) => fn(then)
-  })(withCps(action));
+    then: (io) => io()(then),
+  })(withIo(withCps(action)));
 
 export {
   of,
@@ -20,7 +21,7 @@ export {
   handler,
   Effect,
   handle,
-  interpret
+  interpret,
 } from "./core";
 export {
   pipe,
@@ -28,7 +29,7 @@ export {
   id,
   flow,
   CPS,
-  makeGeneratorDo
+  makeGeneratorDo,
 } from "./utils";
 export {
   waitFor,
@@ -39,7 +40,9 @@ export {
   withForeach,
   genHandler,
   raise,
-  trycatch
+  trycatch,
+  io,
+  withIo,
 } from "./core_effects";
 // const withTimesTwo = handler({
 // timesTwo: (val, exec, resume, then) => {

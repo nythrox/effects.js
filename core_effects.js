@@ -8,19 +8,30 @@ export const genHandler = (genHandler) => (val, exec, resume, then) => {
   );
   exec(dogen(genHandler))(then);
 };
+
+export const io = effect('io')
+export const withIo = handler({
+  return: (res) => of(() => res),
+  io(thunk, exec, resume, then) {
+    resume(thunk())(then)
+  }
+})
+
+
 export const waitFor = effect("async");
 export const withPromise = handler({
   return: (res) => of(Promise.resolve(res)),
-  async(value, exec, resume, then) {
-    value.then((promiseVal) => {
-      resume(promiseVal)(then);
-    });
-  },
-  // async: genHandler(function*(promise, resume) {
-  //   const promiseVal = yield cps((then) => promise.then(then))
-  //   const res = yield resume(promiseVal)
-  //   return res;
-  // })
+  // async(value, exec, resume, then) {
+  //   value.then((promiseVal) => {
+  //     resume(promiseVal)(then);
+  //   });
+  // },
+  async: genHandler(function* (thunk, resume) {
+    const promise = yield io(thunk);
+    const promiseVal = yield cps((then) => promise.then(then));
+    const res = yield resume(promiseVal);
+    return res;
+  })
 });
 
 export const foreach = effect("list");
