@@ -16,35 +16,16 @@ const findHandler = (key) => (arr) => {
  * Creates a action (monad) that returns a value `value`
  * @param value
  */
-export const of = (value) => (context) => void context.then(value);
+export const of = (value) => ({
+  type: "of",
+  value
+});
 
-export const chain = (chainer) => (action) => (context) =>
-  void action({
-    prev: context,
-    handlers: context.handlers,
-    then: (e) => {
-      const eff2 = chainer(e);
-      eff2(context);
-    },
-  });
-
-/**
- * Runs a program (action monad) and returns a value. Might throw an error if there are no handlers found for a effect
- * @param effect
- * @param then callback to be called after the program finishes
- */
-export const run = (action) => (then) =>
-  void action({
-    prev: undefined,
-    handlers: [],
-    then,
-  });
-
-/**
- * Transforms the value inside an Action (monad)
- * @param {*} mapper
- */
-export const map = (mapper) => (effect) => chain(flow(mapper, of))(effect);
+export const chain = (chainer) => (action) => ({
+  type: "chain",
+  chainer,
+  after: action
+});
 
 /**
  * Creates an effect
@@ -52,53 +33,95 @@ export const map = (mapper) => (effect) => chain(flow(mapper, of))(effect);
  * @param value value to be passed to the handler
  */
 
-export const effect = (key) => (value) => (context) => {
-  const [handler, handlerCtx] = findHandler(key)(context.handlers);
-  handler(
-    value,
-    // exec
-    (eff) => (then) => {
-      const effectCtx = {
-        prev: handlerCtx,
-        handlers: handlerCtx.prev.handlers,
-        then,
-      };
-      eff(effectCtx);
-    },
-    // k/resume
-    (value) => (thenContinueHandler) => {
-      //when the (return) transforming is done, call `thenContinueHandler`
-      handlerCtx.prev.then = thenContinueHandler;
-      context.then(value);
-    },
-    // instead of returning to parent, return to the handlers parent
-    handlerCtx.prev.then
-  );
-};
+export const effect = (key) => (value) => ({
+  type: "effect",
+  value,
+  key
+});
 
 /**
  * Provides handlers to the program passed in the `program` ar
  * @param handlers map of handlers
  * @param program program to handle
  */
-export const handler = (handlers) => (program) => (context) => {
-  const programBeingHandledCtx = {
-    prev: context,
-    then: (val) => {
-      if (handlers.return) {
-        handlers.return(val)(context);
-      } else of(val)(context);
-    },
-  };
-  programBeingHandledCtx.handlers = [
-    ...context.handlers,
-    {
-      handlers,
-      context: programBeingHandledCtx,
-    },
-  ];
-  program(programBeingHandledCtx);
+export const handler = (handlers) => (program) => ({
+  type: "handler",
+  handlers,
+  program
+});
+
+export const interpret = (context) => (action) => {
+  switch (action.type) {
+    case "of": {
+      context.then(action.value);
+      return;
+    }
+    case "chain": {
+      interpret({
+        prev: context,
+        handlers: context.handlers,
+        then: (e) => {
+          const eff2 = action.chainer(e);
+          interpret(context)(eff2);
+        }
+      })(action.after);
+      return;
+    }
+    case "effect": {
+      const [handler, handlerCtx] = findHandler(action.key)(context.handlers);
+      handler(
+        action.value,
+        // exec
+        (action) => (then) => {
+          const effectCtx = {
+            prev: handlerCtx,
+            handlers: handlerCtx.prev.handlers,
+            then
+          };
+          interpret(effectCtx)(action);
+        },
+        // k/resume
+        (value) => (thenContinueHandler) => {
+          //when the (return) transforming is done, call `thenContinueHandler`
+          handlerCtx.prev.then = thenContinueHandler;
+          context.then(value);
+        },
+        // instead of returning to parent, return to the handlers parent
+        handlerCtx.prev.then
+      );
+      return;
+    }
+    case "handler": {
+      const { handlers, program } = action;
+      const programBeingHandledCtx = {
+        prev: context,
+        then: (val) => {
+          if (handlers.return) {
+            interpret(context)(handlers.return(val));
+          } else interpret(context)(of(val));
+        }
+      };
+      programBeingHandledCtx.handlers = [
+        ...context.handlers,
+        {
+          handlers,
+          context: programBeingHandledCtx
+        }
+      ];
+      interpret(programBeingHandledCtx)(program);
+      return;
+    }
+    default: {
+      throw new Error("invalid instrution: " + JSON.stringify(action));
+    }
+  }
 };
+
+/**
+ * Transforms the value inside an Action (monad)
+ * @param {*} mapper
+ */
+export const map = (mapper) => (effect) => chain(flow(mapper, of))(effect);
 
 /**
  * This function is the same as `handler` but with the `program` argument first and `handlers` argument second
@@ -114,5 +137,5 @@ export const Effect = {
   chain,
   of,
   single: makeGeneratorDo(of)(chain),
-  do: makeMultishotGeneratorDo(of)(chain),
+  do: makeMultishotGeneratorDo(of)(chain)()
 };
