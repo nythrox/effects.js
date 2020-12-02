@@ -1,8 +1,6 @@
 ## Effects.js
 ```javascript
-  // write your program using generator do notation or using chains
-  
-  
+  // write your program in direct style using the generator do notation
   const programDirectStyle = Effect.do(function*() {
      const auth = yield dependency('auth')
      const mouseEvent = yield cps(window.onclick)
