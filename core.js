@@ -18,13 +18,13 @@ const findHandler = (key) => (arr) => {
  */
 export const of = (value) => ({
   type: "of",
-  value
+  value,
 });
 
 export const chain = (chainer) => (action) => ({
   type: "chain",
   chainer,
-  after: action
+  after: action,
 });
 
 /**
@@ -36,7 +36,7 @@ export const chain = (chainer) => (action) => ({
 export const effect = (key) => (value) => ({
   type: "effect",
   value,
-  key
+  key,
 });
 
 /**
@@ -47,7 +47,7 @@ export const effect = (key) => (value) => ({
 export const handler = (handlers) => (program) => ({
   type: "handler",
   handlers,
-  program
+  program,
 });
 
 export const interpret = (context) => (action) => {
@@ -63,7 +63,7 @@ export const interpret = (context) => (action) => {
         then: (e) => {
           const eff2 = action.chainer(e);
           interpret(context)(eff2);
-        }
+        },
       })(action.after);
       return;
     }
@@ -76,7 +76,7 @@ export const interpret = (context) => (action) => {
           const effectCtx = {
             prev: handlerCtx,
             handlers: handlerCtx.prev.handlers,
-            then
+            then,
           };
           interpret(effectCtx)(action);
         },
@@ -97,16 +97,27 @@ export const interpret = (context) => (action) => {
         prev: context,
         then: (val) => {
           if (handlers.return) {
-            interpret(context)(handlers.return(val));
-          } else interpret(context)(of(val));
-        }
+            handlers.return(
+              val,
+              (action) => (then) => {
+                const effectCtx = {
+                  prev: context,
+                  handlers: context.handlers,
+                  then,
+                };
+                interpret(effectCtx)(action);
+              },
+              context.then
+            );
+          } else context.then(val); // interpret(context)(of(val));
+        },
       };
       programBeingHandledCtx.handlers = [
         ...context.handlers,
         {
           handlers,
-          context: programBeingHandledCtx
-        }
+          context: programBeingHandledCtx,
+        },
       ];
       interpret(programBeingHandledCtx)(program);
       return;
@@ -137,5 +148,5 @@ export const Effect = {
   chain,
   of,
   single: makeGeneratorDo(of)(chain),
-  do: makeMultishotGeneratorDo(of)(chain)()
+  do: makeMultishotGeneratorDo(of)(chain)(),
 };

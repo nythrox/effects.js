@@ -6,21 +6,23 @@ export const genHandler = (genHandler) => (val, exec, resume, then) => {
   const dogen = makeMultishotGeneratorDo(Effect.of)(Effect.chain)(val, (val) =>
     cps(resume(val))
   );
-  exec(dogen(genHandler))(then);
+  exec(dogen(genHandler))(then ? then : resume); // in case used on return
 };
 
-export const io = effect('io')
+export const io = effect("io");
 export const withIo = handler({
-  return: (res) => of(() => res),
+  return: (res, exec, then) => then(() => res),
   io(thunk, exec, resume, then) {
-    resume(thunk())(then)
+    resume(thunk())(then);
   }
-})
-
+});
 
 export const wait = effect("async");
 export const withPromise = handler({
-  return: (res) => of(Promise.resolve(res)),
+  return: (res, exec, then) => then(Promise.resolve(res)),
+  // return: genHandler(function* (val) {
+  //   return Promise.resolve(val);
+  // }),
   // async(value, exec, resume, then) {
   //   value.then((promiseVal) => {
   //     resume(promiseVal)(then);
@@ -58,7 +60,7 @@ export const withForeach = handler({
       newArray = [...newArray, ...res];
     }
     return newArray;
-  }),
+  })
 });
 export const raise = effect("exn");
 
@@ -66,15 +68,17 @@ export const trycatch = (program) => (oncatch) =>
   handler({
     exn(value, exec, resume, then) {
       exec(oncatch(value))(then);
-    },
+    }
   })(program);
 
 export const cps = effect("cps");
 export const withCps = handler({
-  return: (value) => of(CPS.of(value)),
+  return: (value, exec, then) => {
+    then(CPS.of(value));
+  },
   cps(fn, exec, resume, then) {
     pipe(fn, CPS.chain(resume))(then);
-  },
+  }
 });
 
 // export const forEachInStream = effect("forEachInStream");
@@ -102,7 +106,6 @@ export const withCps = handler({
 //     then(newStream);
 //   }
 // });
-
 
 export const dependency = effect("reader");
 export const reader = (dependencyMap) =>
