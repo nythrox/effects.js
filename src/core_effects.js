@@ -39,7 +39,7 @@ export const withPromise = handler({
 export const foreach = effect("list");
 
 export const withForeach = handler({
-  return: (res) => of([res]),
+  return: (res, exec, then) => then([res]),
 
   // array(value, exec, resume, then) {
   //   function flatmap(arr, remaining) {
