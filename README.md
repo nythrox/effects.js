@@ -4,7 +4,7 @@ Algebraic effects in javascript with scoped handlers, multishot delimited contin
 ### What are Algebraic Effects?
 Algebraic effects are based on two primary concepts: effects and handlers. Effects are just a representation of an action that can be performed. Handlers will catch the performed effects and can choose to resume the continuation with a result (like a promise), resume the continuation multiple times (like a stream), or not resume at all and cancel the computation (like an exception). Handlers can also transform the result of the computation (into a promise, a stream, an array, etc). 
 
-You can learn more about algebraic effects <a href="https://github.com/nythrox/effects.js/new/master">here</a>. 
+<a href="https://github.com/nythrox/effects.js/new/master">You can learn more about algebraic effects here</a>. 
 
 Algebraic effects bring a multitude of advantages: 
 - dependency injection
@@ -37,7 +37,7 @@ It's easier to understand what it allows by seeing it in action:
   } // after each click, returns ['logged with account account1', 'logged with account account2', ...] 
 ```
 
-You can find the full example and others <a href="https://github.com/nythrox/effects.js/edit/master/Examples.md">here</a>.
+ <a href="https://github.com/nythrox/effects.js/edit/master/Examples.md">You can find the full example and others here</a>.
 
 
 ### How to understand Algebraic Effects from an Object-Oriented background
