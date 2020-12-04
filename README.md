@@ -18,23 +18,45 @@ It's easier to understand what it allows by seeing it in action:
 ```javascript
   // write your program in direct style using the generator do notation
   const programDirectStyle = function*() {
-     const auth = yield dependency('auth') // dependency injection with Reader monad
-     const mouseEvent = yield forEachInStream(click$) // run this every time the stream gets a new item
-     const user = yield getUser(auth.userId) // await for async call
-     const account = yield foreach(user.accounts) // for each account in the users list of accounts
-     yield submitEvent(user, { type: 'clicked', details: mouseEvent, account }) // await for async call
+     // dependency injection
+     const auth = yield dependency('auth') 
+     
+     // run this every time the stream gets a new item
+     const mouseEvent = yield forEachInStream(click$)
+     
+     // await for async call
+     const user = yield getUser(auth.userId) 
+     
+     // for each account in the users list of accounts
+     const account = yield foreach(user.accounts) 
+     
+     // await for async call
+     yield submitEvent(user, { type: 'clicked', details: mouseEvent, account }) 
+     
      return 'logged with account ${account.name}'
   } // after each click, returns ['logged with account account1', 'logged with account account2', ...] 
 ```
 
 You can find the full example and others <a href="https://github.com/nythrox/effects.js/edit/master/Examples.md">here</a>.
 
-### Actions (Action monad)
-An Action is a monad used to represent effectful computations. 
 
-The action monad can be any of the following four things: Pure | Chain | Effect | Handler
+### How to understand Algebraic Effects from an Object-Oriented background
+- Effects are like exceptions
 
-Pure lets you lift any value into the action monad: 
+You can perform (`yield`) an effect the same way you would `throw` an exception. The difference is that when you perform an effect, a handler that `catches` it can return a value.
+
+- Handlers are like `try catch`
+
+Handlers are nested just like `try catch` blocks, and when an handler is performed (`yielded`) it will be caught by the nearest handler. 
+
+Handlers can also `rethrow` the effect (by performing the effect again), or then can `resume` the computation and return a value to the function that performed the effect, or they can cancel (not resume) the computation and return a different value. Each time you `resume` the computation, you will get the result of resuming it, and can choose what to do with it (returning the result directly, performing other effects, transforming the result and returning it).
+
+### Actions (<sub><sup>action monad</sup></sub>)
+An Action is used to represent effectful computations. 
+
+An Action can be any of the following four things: Pure | Chain | Effect | Handler
+
+Pure lets turn any value into an Action: 
 ```javascript
    // const number: Action<10>
    const number = of(10)
@@ -55,12 +77,12 @@ The `effect` function receives an argument with the effects key, and then the va
 ```
 Handlers let you catch effects and choose what to do with the continuation
 ```javascript
-   // withTest: (action) => Action 
+   // withPlusOne: (action) => Action 
    const withPlusOne = handler({
       plusOne: (number) => ...
    }) 
    // program: Action<2>
-   const program = withTest(plusOne(1))
+   const program = withPlusOne(plusOne(1))  // wrap the program with the handler to handler it
 ```
 You can run an action using the `run` function
 ```javascript
@@ -75,16 +97,15 @@ You can run an action using the `run` function
 
 ### Effects
 Effects are actions that will find a handler and receive the value that it returns
+
 To create an effect, you just need to call the curried `effect` function with the effects' key
 ```javascript
 const log = effect('logEffect')
 ```
-After that you can call the effect, and it will return an Action monad that provides the value of the result of the effect
+After that you can call the effect, and it will return an Action that provides the value of the result of the effect
 ```javascript
-const program = pipe(
-  log('hello world'), // call effect
-  run(console.log)
-) // throws Error: "No handler found for effect logEffect"
+  log('hello world') // call effect
+ // throws Error: "No handler found for effect logEffect"
 ```
 ### Handlers
 Handlers are responsible for catching the effect call and returning a result (resume) or skipping the computation and returning a value
@@ -110,7 +131,7 @@ A handler function receives four parameters:
 
 `then: (value) => void` should be called when the handler is done, passing in the result of the handler. this should only be called once
 
-You can also use the generator version, which simplifies the proccess a lot
+You can also use the generator version
 ```javascript
 const withLog = handler({
   return: genHandler(function*(value) {
@@ -118,7 +139,8 @@ const withLog = handler({
   }),
   logEffect: genHandler(function* (value, resume) {
 	  console.log(value)
-	  return yield resume(undefined)
+	  const result = yield resume(undefined)
+	  return result
    })
 })
 ```
@@ -141,4 +163,4 @@ Feel free to create PRs or issues about bugs, suggestions, code review, question
 - API documentation
 - Add more core effects and better the existing ones to have a better performance
 - Expose API functions that work only with generators, and API functions that work with raw monads and continuations
-- Create a tutorial pa
+- Create a tutorial page
