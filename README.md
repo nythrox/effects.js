@@ -37,7 +37,7 @@ It's easier to understand what it allows by seeing it in action:
   } // after each click, returns ['logged with account account1', 'logged with account account2', ...] 
 ```
 
- <a href="https://github.com/nythrox/effects.js/edit/master/Examples.md">You can find the full example and others here</a>.
+ <a href="https://github.com/nythrox/effects.js/blob/master/Examples.md">You can find the full example and others here</a>.
 
 
 ### How to understand Algebraic Effects from an Object-Oriented background
