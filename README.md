@@ -163,4 +163,5 @@ Feel free to create PRs or issues about bugs, suggestions, code review, question
 - API documentation
 - Add more core effects and better the existing ones to have a better performance
 - Expose API functions that work only with generators, and API functions that work with raw monads and continuations
+- Explain how delimited continuations work with algebaric effects, how the resume() works, what then() does, etc.
 - Create a tutorial page
