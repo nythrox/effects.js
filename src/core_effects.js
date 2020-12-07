@@ -81,10 +81,10 @@ export const withCps = handler({
   }
 });
 
-// export const forEachInStream = effect("forEachInStream");
-// export const withForEachInStream = handler({
+// export const subscribe = effect("subscribe");
+// export const withSubscribe = handler({
 //   return: (value) => of(RxJsOf(value)),
-//   // forEachInStream: genHandler(function* (stream, resume) {
+//   // subscribe: genHandler(function* (stream, resume) {
 //   //   let newStream = of();
 //   //   let sub;
 //   //   const item = yield cps((then) => {
@@ -94,7 +94,7 @@ export const withCps = handler({
 //   //   newStream = merge(res, newStream);
 //   //   return newStream;
 //   // })
-//   forEachInStream: (stream, exec, resume, then) => {
+//   subscribe: (stream, exec, resume, then) => {
 //     let newStream = new ReplaySubject();
 //     let sub = stream.subscribe((item) => {
 //       resume(item)((res) => {

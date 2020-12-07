@@ -81,8 +81,8 @@ export {
 // pipe(withForeach(programmulti), run(console.log));
 
 // const programstream = Effect.do(function* () {
-//   const num = yield forEachInStream(Rx.of(1, 2));
-//   const num2 = yield forEachInStream(Rx.of(1, 2, 3));
+//   const num = yield subscribe(Rx.of(1, 2));
+//   const num2 = yield subscribe(Rx.of(1, 2, 3));
 //   const num3 = yield foreach([1, 2, 3, 4, 5]);
 //   const num4 = yield waitFor(Promise.resolve(5));
 //   return [num, num2, num3, num4];
@@ -91,7 +91,7 @@ export {
 // pipe(
 //   programstream,
 //   withForeach,
-//   withForEachInStream,
+//   withSubscribe,
 //   withPromise,
 //   run((promise) => {
 //     promise.then((stream) => {

@@ -7,7 +7,7 @@ Here are a few examples of effects and handlers you can create
   // write your program in direct style using the generator do notation
   const programDirectStyle = function*() {
      const auth = yield dependency('auth') // dependency injection with Reader monad
-     const mouseEvent = yield forEachInStream(click$) // run this every time the stream gets a new item
+     const mouseEvent = yield subscribe(click$) // run this every time the stream gets a new item
      const user = yield getUser(auth.userId) // await for async call
      const account = yield foreach(user.accounts) // for each account in the users list of accounts
      yield submitEvent(user, { type: 'clicked', details: mouseEvent, account }) // await for async call
@@ -47,7 +47,7 @@ Here are a few examples of effects and handlers you can create
     Effect.do,
     withDependencies,
     withForeach,
-    withForEachInStream, 
+    withSubscribe, 
     withAsync, // provide promise handler
     run((promise) => promise.then(stream => stream.subscribe(console.log)))
   ) // after each click, logs ['logged with account account1', 'logged with account account2', ...] 
