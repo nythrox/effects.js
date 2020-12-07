@@ -41,16 +41,11 @@ Here are a few examples of effects and handlers you can create
       return res;
    })
   });
-
-  pipe(
-    program,
-    Effect.do,
-    withDependencies,
-    withForeach,
-    withSubscribe, 
-    withAsync, // provide promise handler
-    run((promise) => promise.then(stream => stream.subscribe(console.log)))
-  ) // after each click, logs ['logged with account account1', 'logged with account account2', ...] 
+  //handledProgram: Action<Promise<Stream<Array<string>>>>
+  const handledProgram = withAsync(withSubscribe(withForeach(withDependencies(Effect.do(program)))))
+   
+  run((promise) => promise.then(stream => stream.subscribe(console.log)))
+  // after each click, logs ['logged with account account1', 'logged with account account2', ...] 
 ```
 You could also write your program without using generator functions:
 ```javascript
@@ -65,7 +60,17 @@ You could also write your program without using generator functions:
           )
        )
     )
-  )  
+  )    
+  
+  pipe(
+    program,
+    Effect.do,
+    withDependencies,
+    withForeach,
+    withSubscribe, 
+    withAsync, // provide promise handler
+    run((promise) => promise.then(stream => stream.subscribe(console.log)))
+  ) // after each click, logs ['logged with account account1', 'logged with account account2', ...] 
 ```
 
 
