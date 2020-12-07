@@ -6,7 +6,7 @@ Here are a few examples of effects and handlers you can create
 ```javascript
   // write your program in direct style using the generator do notation
   const programDirectStyle = function*() {
-     const auth = yield dependency('auth') // dependency injection with Reader monad
+     const auth = yield dependency('auth') // dependency injection with a simple handler
      const mouseEvent = yield subscribe(click$) // run this every time the stream gets a new item
      const user = yield getUser(auth.userId) // await for async call
      const account = yield foreach(user.accounts) // for each account in the users list of accounts
@@ -18,8 +18,8 @@ Here are a few examples of effects and handlers you can create
   const submitEvent = (user, details) => wait(() => fetch('https://myapi.com/event/', { method: 'POST', body: JSON.stringify(details) }))
   
   // re-use existing effects and effect handlers
-  // reader returns a handler than can be used to resume the effects with the data provided
-  const withDependencies = reader({
+  // dependencies returns a handler than can be used to resume the effects with the data provided
+  const withDependencies = dependencies({
      auth: {
         userId: 1  
      }
