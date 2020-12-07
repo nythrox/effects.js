@@ -64,7 +64,7 @@ Pure lets turn any value into an Action:
 Chain (and map) lets you transform the result of another action 
 ```javascript
    // doubleNumber: Action<20>
-   const doubleNumber = pipe(number, map(num => num * 2))
+   const doubleNumber = pipe(number, map(num => num * 2)) // map(num => num * 2)(number)
 ```
 Effect lets you perform an effect and get the result from the handlers (or it throws an Exception if no handlers are found)
 
@@ -88,7 +88,7 @@ You can run an action using the `run` function
 ```javascript
    // run: (callback) => (action) => void
    
-   pipe(
+   pipe( // run(console.log)(program)
        program,
        run(console.log)
    ) // logs 2
