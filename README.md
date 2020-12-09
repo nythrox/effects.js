@@ -155,6 +155,7 @@ Feel free to create PRs or issues about bugs, suggestions, code review, question
 
 ### TODO:
 - Make the interpreter stack-safe
+- Make handler lookup O(1)
 - Make the current generator do notation stack-safe
 - Benchmarks
 - Make a do notation babel plugin to compile the generator into chains
