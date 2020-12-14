@@ -37,7 +37,7 @@ It's easier to understand what it allows by seeing it in action:
   } // after each click, returns ['logged with account account1', 'logged with account account2', ...] 
 ```
 
- <a href="https://github.com/nythrox/effects.js/edit/master/Examples.md">You can find the full example and others here</a>.
+ <a href="https://github.com/nythrox/effects.js/blob/master/Examples.md">You can find the full example and others here</a>.
 
 
 ### How to understand Algebraic Effects from an Object-Oriented background
@@ -155,6 +155,7 @@ Feel free to create PRs or issues about bugs, suggestions, code review, question
 
 ### TODO:
 - Make the interpreter stack-safe
+- Make handler lookup O(1)
 - Make the current generator do notation stack-safe
 - Benchmarks
 - Make a do notation babel plugin to compile the generator into chains
@@ -163,4 +164,5 @@ Feel free to create PRs or issues about bugs, suggestions, code review, question
 - API documentation
 - Add more core effects and better the existing ones to have a better performance
 - Expose API functions that work only with generators, and API functions that work with raw monads and continuations
+- Explain how delimited continuations work with algebaric effects, how the resume() works, what then() does, etc.
 - Create a tutorial page
