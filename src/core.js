@@ -148,5 +148,5 @@ export const Effect = {
   chain,
   of,
   single: makeGeneratorDo(of)(chain),
-  do: makeMultishotGeneratorDo(of)(chain)(),
+  do: makeMultishotGeneratorDo(of)(chain),
 };
