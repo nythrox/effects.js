@@ -70,7 +70,6 @@ export const trycatch = (program) => (oncatch) =>
       exec(oncatch(value))(then);
     }
   })(program);
-
 export const cps = effect("cps");
 export const withCps = handler({
   return: (value, exec, then) => {
