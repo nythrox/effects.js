@@ -12,10 +12,17 @@ TODO: add better explanations.
 
 You can read more about algebraic effects in the links bellow, or see some examples <a href="https://github.com/nythrox/effects.js/edit/master/Examples.md">here</a>:
 
+A collection anything related to Algebraic Effects
 https://github.com/yallop/effects-bibliography
 
+Algebraic Effects for React Developers
+https://reesew.io/posts/react-algebraic-effects
+
+An Introduction to Algebraic Effects and Handlers
 https://www.eff-lang.org/handlers-tutorial.pdf
 
+Effect Handlers for the Masses
 https://dl.acm.org/doi/pdf/10.1145/3276481
 
+Handlers in Action
 http://homepages.inf.ed.ac.uk/slindley/papers/handlers.pdf
