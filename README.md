@@ -150,9 +150,13 @@ To learn more about effect handlers, see <a href="https://www.eff-lang.org/handl
 #### DISCLAIMER: 
 This implementation is not stack-safe. Work is in progress to make it stack-safe.
 
+### Limitations:
+In a `callback` handler, can only call `exec` while the handler is still running, you can not save it somewher else (tearoff) and call it later
+You can only resume continuations inside of handlers (you cannot `tearoff` the callback and use it after the handler hasreturned)
+
 ### Assistance is wanted
 Feel free to create PRs or issues about bugs, suggestions, code review, questions, similar ideas, improvements, etc. You can also get in contact with <a href="https://github.com/nythrox"> me</a>, don't be shy to send a message!
-
+   
 ### TODO:
 - Make the interpreter stack-safe
 - Make handler lookup O(1)

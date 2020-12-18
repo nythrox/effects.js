@@ -115,11 +115,6 @@ export function pipe(
   return;
 }
 
-const cpsOf = (value) => (then) => then(value);
-const cpsChain = (chainer) => (cps) => (then) =>
-  cps((val) => chainer(val)(then));
-const cpsMap = (mapper) => CPS.chain(flow(mapper, CPS.of));
-
 export const makeMultishotGeneratorDo = (of) => (chain) => (generatorFun) => {
   function run(history) {
     const it = generatorFun();
@@ -148,13 +143,4 @@ export const makeGeneratorDo = (of) => (chain) => (generatorFun) => {
     })(state.value);
   }
   return run(state);
-};
-
-
-export const CPS = {
-  of: cpsOf,
-  map: cpsMap,
-  chain: cpsChain,
-  single: makeGeneratorDo(cpsOf)(cpsChain),
-  do: makeMultishotGeneratorDo(cpsOf)(cpsChain)
 };
