@@ -68,8 +68,5 @@ You can run an action using the `run` function
 > run: (Action) => Promise
 ```javascript
    
-   pipe( // run(console.log)(program)
-       program,
-       run(console.log)
-   ) // logs 2
+   run(program).then(console.log)
 ```
