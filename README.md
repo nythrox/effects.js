@@ -41,7 +41,14 @@ It's easier to understand what it allows by seeing it in action:
 
 ### Limitations of this library:
 In a `callback` handler, can only call `exec` while the handler is still running, you can not save it somewher else (tearoff) and call it later
-You can only resume continuations inside of handlers (you cannot `tearoff` the callback and use it after the handler hasreturned)
+You can only resume continuations inside of handlers (you cannot `tearoff` the callback and use it after the handler has returned)
+
+
+### Stack-safety
+It is stack-safe!
+
+### Performance
+See benchmarks, but it is expected to perform better than using Promises 
 
 ### Assistance is wanted
 Feel free to create PRs or issues about bugs, suggestions, code review, questions, similar ideas, improvements, etc. You can also get in contact with <a href="https://github.com/nythrox"> me</a>, don't be shy to send a message!

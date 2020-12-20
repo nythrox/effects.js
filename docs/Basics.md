@@ -56,3 +56,28 @@ Handlers are like try catch blocks, so they are scoped and only affect the neste
 ```javascript
 const handledProgram = withGetMessage(withWaitMs(program));
 ```
+
+
+
+You can read more about algebraic effects in the links bellow, or see some examples <a href="https://github.com/nythrox/effects.js/edit/master/docs/examples.md">here</a>:
+
+Why PLs Should Have Effect Handlers
+https://robotlolita.me/diary/2018/10/why-pls-need-effects/
+
+What does algebraic effects mean in FP?
+https://stackoverflow.com/questions/49626714/what-does-algebraic-effects-mean-in-fp/57280373#57280373
+
+A collection anything related to Algebraic Effects
+https://github.com/yallop/effects-bibliography
+
+Algebraic Effects for React Developers
+https://reesew.io/posts/react-algebraic-effects
+
+An Introduction to Algebraic Effects and Handlers
+https://www.eff-lang.org/handlers-tutorial.pdf
+
+Effect Handlers for the Masses
+https://dl.acm.org/doi/pdf/10.1145/3276481
+
+Handlers in Action
+http://homepages.inf.ed.ac.uk/slindley/papers/handlers.pdf
