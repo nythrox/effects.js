@@ -1,4 +1,10 @@
-import { makeGeneratorDo, makeMultishotGeneratorDo } from "./utils";
+const {
+  makeGeneratorDo,
+  makeMultishotGeneratorDo,
+  flow,
+  pipe,
+  id,
+} = require("./utils");
 
 const _chain = function (chainer) {
   return chain(chainer)(this);
@@ -17,14 +23,14 @@ const finishHandler = (value) => ({
  * Creates a action (monad) that returns a value `value`
  * @param value
  */
-export const pure = (value) => ({
+const pure = (value) => ({
   value,
   type: "Pure",
   chain: _chain,
   map: _map,
 });
 
-export const chain = (chainer) => (action) => ({
+const chain = (chainer) => (action) => ({
   chainer,
   after: action,
   type: "Chain",
@@ -36,8 +42,7 @@ export const chain = (chainer) => (action) => ({
  * Transforms the value inside an Action (monad)
  * @param mapper
  */
-export const map = (mapper) => (action) =>
-  chain((val) => pure(mapper(val)))(action);
+const map = (mapper) => (action) => chain((val) => pure(mapper(val)))(action);
 
 /**
  * Creates an effect
@@ -45,7 +50,7 @@ export const map = (mapper) => (action) =>
  * @param value value to be passed to the handler
  */
 
-export const effect = (key) => (value) => ({
+const effect = (key) => (value) => ({
   key,
   value,
   type: "Effect",
@@ -53,13 +58,13 @@ export const effect = (key) => (value) => ({
   map: _map,
 });
 
-export const perform = (key, value) => effect(key)(value);
+const perform = (key, value) => effect(key)(value);
 /**
  * Provides handlers to the program passed in the `program` ar
  * @param handlers map of handlers
  * @param program program to handle
  */
-export const handler = (handlers) => (program) => ({
+const handler = (handlers) => (program) => ({
   handlers,
   program,
   type: "Handler",
@@ -74,20 +79,20 @@ export const handler = (handlers) => (program) => ({
  * @param program program to handle
  * @param handlers map of handlers
  */
-export const handle = (program) => (handlers) => handler(handlers)(program);
-export const resume = (value) => ({
+const handle = (program) => (handlers) => handler(handlers)(program);
+const resume = (value) => ({
   value,
   type: "Resume",
   chain: _chain,
   map: _map,
 });
-export const callback = (callback) => ({
+const callback = (callback) => ({
   callback,
   type: "MultiCallback",
   chain: _chain,
   map: _map,
 });
-export const singleCallback = (callback) => ({
+const singleCallback = (callback) => ({
   callback,
   type: "SingleCallback",
   chain: _chain,
@@ -108,7 +113,7 @@ const findHandlers = (key) => (array) => {
   }
   return handlers;
 };
-export class Interpreter {
+class Interpreter {
   constructor(onDone, context) {
     this.context = context;
     this.onDone = onDone;
@@ -257,7 +262,7 @@ export class Interpreter {
         }
         default: {
           throw Error("invalid instruction: " + JSON.stringify(action));
-          }
+        }
       }
     }
     this.isPaused = true;
@@ -295,15 +300,15 @@ export class Interpreter {
     }
   }
 }
-export const io = effect("io");
-export const withIo = handler({
+const io = effect("io");
+const withIo = handler({
   return: (value) => pure(() => value),
   io(thunk) {
     const value = thunk();
     return resume(value);
   },
 });
-export const run = (program) =>
+const run = (program) =>
   new Promise((resolve, reject) => {
     try {
       new Interpreter((thunk) => resolve(thunk()), {
@@ -317,17 +322,17 @@ export const run = (program) =>
     }
   });
 
-export const Effect = {
+const Effect = {
   map,
   chain,
   of: pure,
   single: makeGeneratorDo(pure)(chain),
   do: makeMultishotGeneratorDo(pure)(chain),
 };
-export const eff = Effect.single;
-export const forEach = effect("forEach");
+const eff = Effect.single;
+const forEach = effect("forEach");
 
-export const withForEach = handler({
+const withForEach = handler({
   return: (val) => pure([val]),
   forEach: (array) => {
     const nextInstr = (newArr = []) => {
@@ -347,4 +352,27 @@ export const withForEach = handler({
   },
 });
 
-export { flow, pipe, id } from "./utils";
+module.exports = {
+  flow,
+  pipe,
+  id,
+  withForEach,
+  eff,
+  forEach,
+  run,
+  io,
+  withIo,
+  Interpreter,
+  singleCallback,
+  callback,
+  chain,
+  pure,
+  map,
+  handle,
+  handler,
+  resume,
+  perform,
+  effect,
+  Effect,
+  eff
+};

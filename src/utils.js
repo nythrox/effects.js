@@ -1,7 +1,7 @@
-export function id(a) {
+ function id(a) {
   return a;
 }
-export function flow(ab, bc, cd, de, ef, fg, gh, hi, ij) {
+ function flow(ab, bc, cd, de, ef, fg, gh, hi, ij) {
   switch (arguments.length) {
     case 1:
       return ab;
@@ -40,7 +40,7 @@ export function flow(ab, bc, cd, de, ef, fg, gh, hi, ij) {
   }
   return;
 }
-export function pipe(
+ function pipe(
   a,
   ab,
   bc,
@@ -115,7 +115,7 @@ export function pipe(
   return;
 }
 
-export const makeMultishotGeneratorDo = (of) => (chain) => (generatorFun) => {
+ const makeMultishotGeneratorDo = (of) => (chain) => (generatorFun) => {
   function run(history) {
     const it = generatorFun();
     let state = it.next();
@@ -131,7 +131,7 @@ export const makeMultishotGeneratorDo = (of) => (chain) => (generatorFun) => {
   }
   return run([]);
 };
-export const makeGeneratorDo = (of) => (chain) => (generatorFun) => {
+ const makeGeneratorDo = (of) => (chain) => (generatorFun) => {
   const it = generatorFun();
   let state = it.next();
   function run(state) {
@@ -144,3 +144,11 @@ export const makeGeneratorDo = (of) => (chain) => (generatorFun) => {
   }
   return run(state);
 };
+
+module.exports = {
+  makeGeneratorDo,
+  makeMultishotGeneratorDo,
+  pipe,
+  flow,
+  id
+}
