@@ -12,6 +12,12 @@ TODO: add better explanations.
 
 You can read more about algebraic effects in the links bellow, or see some examples <a href="https://github.com/nythrox/effects.js/edit/master/Examples.md">here</a>:
 
+Why PLs Should Have Effect Handlers
+https://robotlolita.me/diary/2018/10/why-pls-need-effects/
+
+What does algebraic effects mean in FP?
+https://stackoverflow.com/questions/49626714/what-does-algebraic-effects-mean-in-fp/57280373#57280373
+
 A collection anything related to Algebraic Effects
 https://github.com/yallop/effects-bibliography
 

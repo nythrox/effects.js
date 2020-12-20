@@ -94,62 +94,6 @@ You can run an action using the `run` function
    ) // logs 2
 ```
 
-
-### Effects
-Effects are actions that will find a handler and receive the value that it returns
-
-To create an effect, you just need to call the curried `effect` function with the effects' key
-```javascript
-const log = effect('logEffect')
-```
-After that you can call the effect, and it will return an Action that provides the value of the result of the effect
-```javascript
-  log('hello world') // call effect
- // throws Error: "No handler found for effect logEffect"
-```
-### Handlers
-Handlers are responsible for catching the effect call and returning a result (resume) or skipping the computation and returning a value
-To create a handler you can use the curried function `handler`, which receives as a first argument a map of handlers, and the second the program to be handled
-```javascript
-const withLog = handler({
-   return(value, exec, then) { then(value) },
-   logEffect(value, exec, resume, then) {
-       console.log(value)
-       resume(undefined)(then)
-   }
-})
-```
-Inside the map of handlers, each key should be a function that will handle an effect (of the same key), and the `return` function is a special function that transforms the result of the handled action (that is optional)
-
-A handler function receives four parameters: 
-
-`value` is the value passed in the effect (ex: 'hello world')
-
-`exec: (action) => (callback) => void` will execute any action in the current handler stack (so you can perform other effects inside the handler) and then calls the callback with the result. this can be called multiple times
-
-`resume: (value) => (callback) => void` will resume the effect call with a value, and then calls the callback with the result. this can be called multiple times
-
-`then: (value) => void` should be called when the handler is done, passing in the result of the handler. this should only be called once
-
-You can also use the generator version
-```javascript
-const withLog = handler({
-  return: genHandler(function*(value) {
-	  return value
-  }),
-  logEffect: genHandler(function* (value, resume) {
-	  console.log(value)
-	  const result = yield resume(undefined)
-	  return result
-   })
-})
-```
-
-To learn more about effect handlers, see <a href="https://www.eff-lang.org/handlers-tutorial.pdf">here</a>
-
-#### DISCLAIMER: 
-This implementation is not stack-safe. Work is in progress to make it stack-safe.
-
 ### Limitations:
 In a `callback` handler, can only call `exec` while the handler is still running, you can not save it somewher else (tearoff) and call it later
 You can only resume continuations inside of handlers (you cannot `tearoff` the callback and use it after the handler hasreturned)
@@ -158,15 +102,11 @@ You can only resume continuations inside of handlers (you cannot `tearoff` the c
 Feel free to create PRs or issues about bugs, suggestions, code review, questions, similar ideas, improvements, etc. You can also get in contact with <a href="https://github.com/nythrox"> me</a>, don't be shy to send a message!
    
 ### TODO:
-- Make the interpreter stack-safe
-- Make handler lookup O(1)
-- Make the current generator do notation stack-safe
 - Benchmarks
 - Make a do notation babel plugin to compile the generator into chains
 - Make a typescript version
-- Find ways to make the handlers stack-safe
 - API documentation
 - Add more core effects and better the existing ones to have a better performance
 - Expose API functions that work only with generators, and API functions that work with raw monads and continuations
 - Explain how delimited continuations work with algebaric effects, how the resume() works, what then() does, etc.
-- Create a tutorial page
+- Get rid of limitations
