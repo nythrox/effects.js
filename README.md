@@ -51,49 +51,6 @@ Handlers are nested just like `try catch` blocks, and when an handler is perform
 
 Handlers can also `rethrow` the effect (by performing the effect again), or then can `resume` the computation and return a value to the function that performed the effect, or they can cancel (not resume) the computation and return a different value. Each time you `resume` the computation, you will get the result of resuming it, and can choose what to do with it (returning the result directly, performing other effects, transforming the result and returning it).
 
-### Actions (<sub><sup>action monad</sup></sub>)
-An Action is used to represent effectful computations. 
-
-An Action can be any of the following four things: Pure | Chain | Effect | Handler
-
-Pure lets turn any value into an Action: 
-```javascript
-   // const number: Action<10>
-   const number = of(10)
-```
-Chain (and map) lets you transform the result of another action 
-```javascript
-   // doubleNumber: Action<20>
-   const doubleNumber = pipe(number, map(num => num * 2)) // map(num => num * 2)(number)
-```
-Effect lets you perform an effect and get the result from the handlers (or it throws an Exception if no handlers are found)
-
-The `effect` function receives an argument with the effects key, and then the value to be passed onto the handler 
-```javascript
-   // plusOne: (number) => Action<number>
-   const plusOne = effect('plusOne')
-   // performed: Error!: No handler found for plusOne
-   const performed = plusOne(1)
-```
-Handlers let you catch effects and choose what to do with the continuation
-```javascript
-   // withPlusOne: (action) => Action 
-   const withPlusOne = handler({
-      plusOne: (number) => ...
-   }) 
-   // program: Action<2>
-   const program = withPlusOne(plusOne(1))  // wrap the program with the handler to handler it
-```
-You can run an action using the `run` function
-```javascript
-   // run: (callback) => (action) => void
-   
-   pipe( // run(console.log)(program)
-       program,
-       run(console.log)
-   ) // logs 2
-```
-
 ### Limitations:
 In a `callback` handler, can only call `exec` while the handler is still running, you can not save it somewher else (tearoff) and call it later
 You can only resume continuations inside of handlers (you cannot `tearoff` the callback and use it after the handler hasreturned)

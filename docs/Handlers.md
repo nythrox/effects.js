@@ -1,6 +1,5 @@
-
 ### Handlers
-Handlers are responsible for catching the effect call and returning a result (resume) or skipping the computation and returning a value
+Handlers are responsible for catching the effect call and resuming with a result (optional)
 To create a handler you can use the curried function `handler`, which receives as a first argument a map of handlers, and the second the program to be handled
 ```javascript
 const withLog = handler({

@@ -1,0 +1,5 @@
+* [Home](/)
+* [Basics](basics.md)
+* [Effects](effects.md)
+* [Handlers](handlers.md)
+* [Actions](actions.md)
