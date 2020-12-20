@@ -2,7 +2,7 @@
 ### Actions (<sub><sup>action monad</sup></sub>)
 The Action monad is the data structure we use to represent our program in Algebraic Effects.
 ```typescript
-type Action = Pure | Chain | Effect | Handler
+type Action = Pure | Chain | Effect | Handler | Resume | Callback | SingleCallback
 ```
 #### Methods
 You can use the following methods on any action:

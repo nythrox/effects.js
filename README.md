@@ -37,21 +37,9 @@ It's easier to understand what it allows by seeing it in action:
   } // after each click, returns ['logged with account account1', 'logged with account account2', ...] 
 ```
 
- <a href="https://github.com/nythrox/effects.js/blob/master/Examples.md">You can find the full example and others here</a>.
+ <a href="https://github.com/nythrox/effects.js/blob/master/docs/examples.md">You can find the full example and others here</a>.
 
-
-### How to understand Algebraic Effects from an Object-Oriented background
-- Effects are like exceptions
-
-You can perform (`yield`) an effect the same way you would `throw` an exception. The difference is that when you perform an effect, a handler that `catches` it can return a value.
-
-- Handlers are like `try catch`
-
-Handlers are nested just like `try catch` blocks, and when an handler is performed (`yielded`) it will be caught by the nearest handler. 
-
-Handlers can also `rethrow` the effect (by performing the effect again), or then can `resume` the computation and return a value to the function that performed the effect, or they can cancel (not resume) the computation and return a different value. Each time you `resume` the computation, you will get the result of resuming it, and can choose what to do with it (returning the result directly, performing other effects, transforming the result and returning it).
-
-### Limitations:
+### Limitations of this library:
 In a `callback` handler, can only call `exec` while the handler is still running, you can not save it somewher else (tearoff) and call it later
 You can only resume continuations inside of handlers (you cannot `tearoff` the callback and use it after the handler hasreturned)
 

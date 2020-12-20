@@ -3,3 +3,4 @@
 * [Effects](effects.md)
 * [Handlers](handlers.md)
 * [Actions](actions.md)
+* [Examples](examples.md)

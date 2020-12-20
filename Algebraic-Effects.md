@@ -10,7 +10,7 @@ Algebraic effects bring a multitude of advantages:
 
 TODO: add better explanations. 
 
-You can read more about algebraic effects in the links bellow, or see some examples <a href="https://github.com/nythrox/effects.js/edit/master/Examples.md">here</a>:
+You can read more about algebraic effects in the links bellow, or see some examples <a href="https://github.com/nythrox/effects.js/edit/master/docs/examples.md">here</a>:
 
 Why PLs Should Have Effect Handlers
 https://robotlolita.me/diary/2018/10/why-pls-need-effects/
