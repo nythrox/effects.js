@@ -1,88 +1,43 @@
 import { makeGeneratorDo, makeMultishotGeneratorDo } from "./utils";
-class Of {
-  constructor(value) {
-    this.value = value;
-  }
-}
-export class Chain {
-  constructor(chainer, after) {
-    this.chainer = chainer;
-    this.after = after;
-  }
-}
-export class Perform {
-  constructor(key, value) {
-    this.key = key;
-    this.value = value;
-  }
-}
-export class Handler {
-  constructor(handlers, program) {
-    this.handlers = handlers;
-    this.program = program;
-  }
-}
-export class Resume {
-  constructor(value) {
-    this.value = value;
-  }
-}
 
-export class MultiCallback {
-  constructor(callback) {
-    this.callback = callback;
-  }
-}
-export class SingleCallback {
-  constructor(callback) {
-    this.callback = callback;
-  }
-}
-export class FinishHandler {
-  constructor(value) {
-    this.value = value;
-  }
-}
-const c = function (chainer) {
-  return new Chain(chainer, this);
+const _chain = function (chainer) {
+  return chain(chainer)(this);
 };
-const m = function (mapper) {
-  return new Chain((e) => of(mapper(e)), this);
+const _map = function (mapper) {
+  return map(mapper)(this);
 };
-
-Of.prototype.chain = c;
-Of.prototype.map = m;
-Chain.prototype.chain = c;
-Chain.prototype.map = m;
-Perform.prototype.chain = c;
-Perform.prototype.map = m;
-Handler.prototype.chain = c;
-Handler.prototype.map = m;
-Resume.prototype.chain = c;
-Resume.prototype.map = m;
-MultiCallback.prototype.chain = c;
-MultiCallback.prototype.map = m;
-SingleCallback.prototype.chain = c;
-SingleCallback.prototype.map = m;
-FinishHandler.prototype.chain = c;
-FinishHandler.prototype.map = m;
-
-const finishHandler = (value) => new FinishHandler(value);
+const finishHandler = (value) => ({
+  value,
+  type: "FinishHandler",
+  chain: _chain,
+  map: _map,
+});
 
 /**
  * Creates a action (monad) that returns a value `value`
  * @param value
  */
-export const of = (value) => new Of(value);
+export const pure = (value) => ({
+  value,
+  type: "Pure",
+  chain: _chain,
+  map: _map,
+});
 
-export const chain = (chainer) => (action) => new Chain(chainer, action);
+export const chain = (chainer) => (action) => ({
+  chainer,
+  after: action,
+  type: "Chain",
+  chain: _chain,
+  map: _map,
+});
 
 /**
  * Transforms the value inside an Action (monad)
  * @param mapper
  */
 export const map = (mapper) => (action) =>
-  new Chain((val) => of(mapper(val)), action);
+  chain((val) => pure(mapper(val)))(action);
 
 /**
  * Creates an effect
@@ -90,15 +45,27 @@ export const map = (mapper) => (action) =>
  * @param value value to be passed to the handler
  */
 
-export const effect = (key) => (value) => new Perform(key, value);
+export const effect = (key) => (value) => ({
+  key,
+  value,
+  type: "Effect",
+  chain: _chain,
+  map: _map,
+});
 
+export const perform = (key, value) => effect(key)(value);
 /**
  * Provides handlers to the program passed in the `program` ar
  * @param handlers map of handlers
  * @param program program to handle
  */
-export const handler = (handlers) => (program) =>
-  new Handler(handlers, program);
+export const handler = (handlers) => (program) => ({
+  handlers,
+  program,
+  type: "Handler",
+  chain: _chain,
+  map: _map,
+});
 
 /**
  * This function is the same as `handler` but with the `program` argument first and `handlers` argument second
@@ -108,10 +75,24 @@ export const handler = (handlers) => (program) =>
  * @param handlers map of handlers
  */
 export const handle = (program) => (handlers) => handler(handlers)(program);
-export const resume = (value) => new Resume(value);
-
-export const callback = (callback) => new MultiCallback(callback);
-export const singleCallback = (callback) => new SingleCallback(callback);
+export const resume = (value) => ({
+  value,
+  type: "Resume",
+  chain: _chain,
+  map: _map,
+});
+export const callback = (callback) => ({
+  callback,
+  type: "MultiCallback",
+  chain: _chain,
+  map: _map,
+});
+export const singleCallback = (callback) => ({
+  callback,
+  type: "SingleCallback",
+  chain: _chain,
+  map: _map,
+});
 
 const findHandlers = (key) => (array) => {
   let handlers;
@@ -139,8 +120,8 @@ export class Interpreter {
       const action = this.context.action;
       const context = this.context;
       // console.log(action);
-      switch (action.constructor) {
-        case Chain: {
+      switch (action.type) {
+        case "Chain": {
           // const nested = action.after;
           // switch (nested.type) {
           //   case "of": {
@@ -157,15 +138,15 @@ export class Interpreter {
             handlers: context.handlers,
             prev: context,
             resume: context.resume,
-            action: action.after
+            action: action.after,
           };
           break;
         }
-        case Of: {
+        case "Pure": {
           this.return(action.value, context);
           break;
         }
-        case SingleCallback: {
+        case "SingleCallback": {
           this.context = undefined;
           action.callback((value) => {
             this.return(value, context);
@@ -175,14 +156,14 @@ export class Interpreter {
           });
           break;
         }
-        case FinishHandler: {
+        case "FinishHandler": {
           this.context = undefined;
           const { callback, value } = action.value;
           // console.log("calling", callback.toString(), "with", value);
           callback(value);
           break;
         }
-        case MultiCallback: {
+        case "MultiCallback": {
           this.context = undefined;
           action.callback(
             // exec
@@ -193,7 +174,7 @@ export class Interpreter {
                 handlers: context.handlers,
                 action: execAction.chain((n) =>
                   finishHandler({ callback: then, value: n })
-                )
+                ),
               };
               const i = new Interpreter(undefined, ctx);
               i.isClone = true;
@@ -214,7 +195,7 @@ export class Interpreter {
           );
           break;
         }
-        case Handler: {
+        case "Handler": {
           const { handlers, program } = action;
           this.context = {
             prev: context,
@@ -224,14 +205,14 @@ export class Interpreter {
               ...context.handlers,
               {
                 handlers,
-                context
-              }
-            ]
+                context,
+              },
+            ],
           };
 
           break;
         }
-        case Perform: {
+        case "Effect": {
           const { value } = action;
           const [handler, transformCtx] = findHandlers(action.key)(
             context.handlers
@@ -248,20 +229,19 @@ export class Interpreter {
             handlers: transformCtx.handlers,
             resume: {
               transformCtx,
-              programCtx: context
-            }
+              programCtx: context,
+            },
           };
           this.context = activatedHandlerCtx;
           break;
         }
-        case Resume: {
+        case "Resume": {
           // inside activatedHandlerCtx
           const { value } = action;
           const { resume } = context;
           // context of the transformer, context of the program to continue
           if (!resume) {
-            throw new Error("using resume outside of handler");
-            return;
+            throw Error("using resume outside of handler");
           }
           const { transformCtx, programCtx } = resume;
           // 2. continue the main program with resumeValue,
@@ -276,9 +256,8 @@ export class Interpreter {
           break;
         }
         default: {
-          throw new Error("invalid instruction: " + JSON.stringify(action));
-          return;
-        }
+          throw Error("invalid instruction: " + JSON.stringify(action));
+          }
       }
     }
     this.isPaused = true;
@@ -286,28 +265,28 @@ export class Interpreter {
   return(value, currCtx) {
     const prev = currCtx && currCtx.prev;
     if (prev) {
-      switch (prev.action.constructor) {
-        case Handler: {
+      switch (prev.action.type) {
+        case "Handler": {
           const { handlers } = prev.action;
           this.context = {
             resume: prev.resume,
             handlers: prev.handlers,
             prev: prev.prev,
-            action: handlers.return ? handlers.return(value) : new Of(value)
+            action: handlers.return ? handlers.return(value) : pure(value),
           };
           break;
         }
-        case Chain: {
+        case "Chain": {
           this.context = {
             handlers: prev.handlers,
             prev: prev.prev,
             resume: prev.resume,
-            action: prev.action.chainer(value)
+            action: prev.action.chainer(value),
           };
           break;
         }
         default: {
-          throw new Error("invalid state");
+          throw Error("invalid state: " + prev.action.type);
         }
       }
     } else {
@@ -318,11 +297,11 @@ export class Interpreter {
 }
 export const io = effect("io");
 export const withIo = handler({
-  return: (value) => of(() => value),
+  return: (value) => pure(() => value),
   io(thunk) {
     const value = thunk();
     return resume(value);
-  }
+  },
 });
 export const run = (program) =>
   new Promise((resolve, reject) => {
@@ -331,7 +310,7 @@ export const run = (program) =>
         handlers: [],
         prev: undefined,
         resume: undefined,
-        action: withIo(program)
+        action: withIo(program),
       }).run();
     } catch (e) {
       reject(e);
@@ -341,19 +320,19 @@ export const run = (program) =>
 export const Effect = {
   map,
   chain,
-  of,
-  single: makeGeneratorDo(of)(chain),
-  do: makeMultishotGeneratorDo(of)(chain)
+  of: pure,
+  single: makeGeneratorDo(pure)(chain),
+  do: makeMultishotGeneratorDo(pure)(chain),
 };
 export const eff = Effect.single;
 export const forEach = effect("forEach");
 
 export const withForEach = handler({
-  return: (val) => of([val]),
+  return: (val) => pure([val]),
   forEach: (array) => {
     const nextInstr = (newArr = []) => {
       if (array.length === 0) {
-        return of(newArr);
+        return pure(newArr);
       } else {
         const first = array.shift();
         return resume(first).chain((a) => {
@@ -365,7 +344,7 @@ export const withForEach = handler({
       }
     };
     return nextInstr();
-  }
+  },
 });
 
 export { flow, pipe, id } from "./utils";
