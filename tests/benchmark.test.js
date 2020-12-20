@@ -1,16 +1,9 @@
 const {
   effect,
-  pipe,
-  io,
   handler,
   resume,
   run,
-  pure,
-  callback,
-  Effect,
-  singleCallback,
-} = require("../src/");
-
+} = require("../src");
 const zzz = effect("test");
 const ez = () => zzz();
 const seila = handler({
