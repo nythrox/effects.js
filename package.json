@@ -2,9 +2,9 @@
   "name": "effects.js",
   "version": "1.0.0",
   "description": "",
-  "main": "index.js",
+  "main": "src/index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "jest"
   },
   "repository": {
     "type": "git",
@@ -15,5 +15,8 @@
   "bugs": {
     "url": "https://github.com/nythrox/effects.js/issues"
   },
-  "homepage": "https://github.com/nythrox/effects.js#readme"
+  "homepage": "https://github.com/nythrox/effects.js#readme",
+  "devDependencies": {
+    "jest": "^26.6.3"
+  }
 }
