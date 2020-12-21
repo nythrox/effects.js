@@ -1,40 +1,31 @@
+
 ### Handlers
 
 Handlers are responsible for catching the effect call and resuming with a result (optional)
-To create a handler you can use the curried function `handler`, which receives as a first argument a map of handlers, and the second the program to be handled
+To create a handler you can use the curried function `handler`, which receives as a first argument a map of handlers, and the second argument is the program to be handled
 
 ```javascript
 const withLog = handler({
-  return(value, exec, then) {
-    then(value);
-  },
-  logEffect(value, exec, resume, then) {
+  // optional return: (value) => eff(function* () { return value }),
+  logEffect: (value) => eff(function* () {
     console.log(value);
-    resume(undefined)(then);
-  },
+    return resume()
+  }),
 });
 ```
 
-Inside the map of handlers, each key should be a function that will handle an effect (of the same key), and the `return` function is a special function that transforms the result of the handled action (that is optional)
+Inside the map of handlers, each key should be a function that will handle an effect (of the same key), and the `return` function is a special function that transforms the result of the handled action (it is optional)
 
-A handler function receives four parameters:
-
-`value` is the value passed in the effect (ex: 'hello world')
-
-`exec: (action) => (callback) => void` will execute any action in the current handler stack (so you can perform other effects inside the handler) and then calls the callback with the result. this can be called multiple times
-
-`resume: (value) => (callback) => void` will resume the effect call with a value, and then calls the callback with the result. this can be called multiple times
-
-`then: (value) => void` should be called when the handler is done, passing in the result of the handler. this should only be called once
+If you want to resume asynchronously, you can use the `callback` and `singleCallback` actions (see in API)
 
 You can also use the generator version
 
 ```javascript
 const withLog = handler({
-  return: genHandler(function* (value) {
+  return: (value) => eff(function* () {
     return value;
   }),
-  logEffect: genHandler(function* (value, resume) {
+  logEffect: (value) => eff(function* () {
     console.log(value);
     const result = yield resume(undefined);
     return result;
@@ -42,13 +33,26 @@ const withLog = handler({
 });
 ```
 
+Since each handler can return a different value (with use of `return` or simply returning a different value from `resume()`), you can provide the handlers in different orders to change the behaviour of your program.
+```javascript
+  // program: Action<Promise<Array<value>>>
+  const program = withAsync(withForeach(stuff))
+
+  // program: Action<Array<Promise<value>>>
+  const program = withForeach(withAsync(stuff))
+```
+You can learn more about how this works in <a href="https://awesomereact.com/videos/hrBq8R_kxI0">this</a> talk on Effects in Koka by Daan Leijen 
+
+
 #### Resume
 
-Calling resume will not only resume the program with a value, but also returns the result of the program after theit finishes running up to the point of the handler.
+Calling resume will not only resume the program with a value, but also returns the result of the resumed program after it finishes running up to the point of the handler.
 
 ### Return
 
 The `return` field inside a handler is a function that is always called once after the program inside the handler finishes executing. It will transform the value and then return it (either to the parent of the handler, or to the result of `resume` if it is called)
 
+### Handlers in details
+If you want to learn more about how handlers work in detail, see <a href="https://www.eff-lang.org/handlers-tutorial.pdf">here</a>
 
-To learn more about effect handlers, see <a href="https://www.eff-lang.org/handlers-tutorial.pdf">here</a>
+

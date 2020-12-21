@@ -45,10 +45,11 @@ You can only resume continuations inside of handlers (you cannot `tearoff` the c
 
 
 ### Stack-safety
-It is stack-safe!
+It's stack-safe!
 
 ### Performance
-See benchmarks, but it is expected to perform better than using Promises 
+See <a href="https://github.com/nythrox/effects.js/blob/master/tests/benchmark.test.js">benchmarks</a>, it is expected to perform better than using native Promises (although they can't really be compared because Algebraic Effects completely encapsulates Promises and is infinitely more extensible). 
+Still, just like async await code (or javascript code in general), it should not be used for cpu-heavy computations, but only for non-blocking IO.
 
 ### Assistance is wanted
 Feel free to create PRs or issues about bugs, suggestions, code review, questions, similar ideas, improvements, etc. You can also get in contact with <a href="https://github.com/nythrox"> me</a>, don't be shy to send a message!

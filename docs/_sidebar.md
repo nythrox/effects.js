@@ -4,3 +4,4 @@
 * [Handlers](handlers.md)
 * [Actions](actions.md)
 * [Examples](examples.md)
+* [API](api.md)
