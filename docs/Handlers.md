@@ -1,4 +1,3 @@
-
 ### Handlers
 
 Handlers are responsible for catching the effect call and resuming with a result (optional)
@@ -41,7 +40,7 @@ Since each handler can return a different value (with use of `return` or simply 
   // program: Action<Array<Promise<value>>>
   const program = withForeach(withAsync(stuff))
 ```
-You can learn more about how this works in <a href="https://awesomereact.com/videos/hrBq8R_kxI0">this</a> talk on Effects in Koka by Daan Leijen 
+You can learn more about how this works in <a href="https://awesomereact.com/videos/hrBq8R_kxI0" target="_blank">this</a> talk on Effects in Koka by Daan Leijen 
 
 
 #### Resume

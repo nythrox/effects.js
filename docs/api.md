@@ -4,7 +4,7 @@
 `exec: (Action) => (execCb: (value) => void) => void` : will execute any action in the current handler stack (so you can resume the program or perform other effects inside the handler) and then calls the `execCb` callback with the result. 
 This can be called multiple times, but only while the handler is still executing (see more at `limitations` of the README)
 
-`done: (value) => void` should be called when the handler is done, passing in the end result of the handler. this should only be called once
+`done: (value) => void` should be called when the callback action is done, passing in the end result of the action. this should only be called once
 
 
 ```javascript
@@ -12,7 +12,7 @@ const exampleCallbackAction = callback((exec, done) => {
   callback((exec, done) => {
     exec(resume(10))((value) => {
       /// do something
-      done("end handler")
+      done("end callback effect")
     })
   })
 ```

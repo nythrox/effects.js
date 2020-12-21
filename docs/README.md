@@ -38,9 +38,8 @@ It's easier to understand what it allows by seeing it in action:
 ```
 
 ### Limitations of this library:
-In a `callback` handler, can only call `exec` while the handler is still running, you can not save it somewher else (tearoff) and call it later
-You can only resume continuations inside of handlers (you cannot `tearoff` the callback and use it after the handler has returned)
-
+1. In a `callback` handler, can only call `exec` while the handler is still running, you can not save it somewhere else (tearoff) and call it later after the handler has returned (meaning you can only resume continuations inside a handler).
+2. The scope is more limited, in some Algebraic Effect languages like `koka` the scope when calling `resume` is more dynamic, but here you can't change the handler scope when calling resume.
 
 ### Stack-safety
 It's stack-safe!
