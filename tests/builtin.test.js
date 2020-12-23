@@ -45,11 +45,18 @@ describe("exception effect", () => {
 
   it("should be right", async () => {
     const program = pipe(pure(10), toEither);
-    expect(await run(program)).toEqual({type: "right", value: 10});
+    expect(await run(program)).toEqual({ type: "right", value: 10 });
   });
-  
+
   it("should be left", async () => {
     const program = pipe(raise(10), toEither);
     expect(await run(program)).toEqual({ type: "left", value: 10 });
+  });
+
+  it("should throw an unhandled error", async () => {
+    const program = raise(10);
+    await run(program).catch((err) => {
+      expect(err).toEqual(10);
+    });
   });
 });

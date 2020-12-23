@@ -397,22 +397,15 @@ const withIoPromise = handler({
   //   }
   // })
 });
-class UncaughtError extends Error {
-  constructor(value) {
-    super("Uncaught Error");
-    this.value = value;
-  }
-}
 const run = (program) =>
   new Promise((resolve, reject) => {
-    const p = pipe(program, withIoPromise, toEither, withIo);
     new Interpreter(
       (thunk) => {
         const either = thunk();
         if (either.type === "right") {
           resolve(either.value);
         } else {
-          reject(new UncaughtError(either.value));
+          reject(either.value);
         }
       },
       reject,
@@ -420,7 +413,7 @@ const run = (program) =>
         handlers: [],
         prev: undefined,
         resume: undefined,
-        action: p,
+        action: pipe(program, withIoPromise, toEither, withIo),
       }
     ).run();
   });
@@ -450,6 +443,5 @@ module.exports = {
   waitFor,
   withIoPromise,
   raise,
-  UncaughtError,
   handleError,
 };
