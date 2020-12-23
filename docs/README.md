@@ -39,6 +39,8 @@ It's easier to understand what it allows by seeing it in action:
      // the return value depends on how you use the handlers 
 ```
 
+All of the effects (request, getUser, sendNotification, etc) are highly testable, and can be replaced with testing/production/alternative versions.
+
 ### Performance
 See <a href="https://github.com/nythrox/effects.js/blob/master/tests/benchmark.test.js">benchmarks</a>, it is expected to perform better than using native Promises (although they can't really be compared, because Algebraic Effects completely encapsulates Promises and is infinitely more extensible). 
 Still, just like async/await code (or javascript code in general), it should not be used for cpu-heavy computations, only for non-blocking IO.
@@ -53,6 +55,18 @@ It's 100% stack-safe!
 ### Assistance is wanted
 Feel free to create PRs or issues about bugs, suggestions, code review, questions, similar ideas, improvements, etc. You can also get in contact with <a href="https://github.com/nythrox"> me</a>, don't be shy to send a message!
    
+### Inspirations
+#### [koka](https://github.com/koka-lang/koka)
+
+#### [Eff](eff-lang.org)
+
+#### [fx-ts](https://github.com/briancavalier/fx-ts)
+
+#### [forgefx](https://github.com/briancavalier/forgefx)
+
+### Acknowledgments
+Thanks so much to the people who helped me with this library! Thanks to [Ohad Kammar](https://github.com/ohad) for answering all my questions on algebraic effects, and [Michael Arnaldi](https://github.com/mikearnaldi) for showing me how to implement ADT interpreters in order to achieve stack-safety in javascript
+
 ### TODO:
 - Make a do notation babel plugin to compile the generator into chains
 - Make a typescript version
