@@ -24,7 +24,7 @@ function p(n) {
 }
 
 describe("benchmarks", () => {
-  it("should run faster than promises", async () => {
+  it("should run faster than promises and not stack overflow", async () => {
     const promise1 = performance.now();
     await p(1000000);
     const promise2 = performance.now();
@@ -33,14 +33,14 @@ describe("benchmarks", () => {
     await run(seila(eff(1000000)));
     const p2 = performance.now();
     const effTime = p2 - p1;
+      // console.log(
+      //   "eff1:",
+      //   effTime,
+      //   "promise:",
+      //   promiseTime,
+      //   "faster:",
+      //   effTime < promiseTime ? "eff" : "promise"
+      // );
     expect(effTime).toBeLessThan(promiseTime);
-    //   console.log(
-    //     "eff1:",
-    //     effTime,
-    //     "promise:",
-    //     promiseTime,
-    //     "faster:",
-    //     effTime < promiseTime ? "eff" : "promise"
-    //   );
   });
 });

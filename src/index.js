@@ -450,5 +450,6 @@ module.exports = {
   waitFor,
   withIoPromise,
   raise,
+  UncaughtError,
   handleError,
 };
