@@ -1,5 +1,5 @@
 * [Home](/)
-* [Algebraic Effects](basics.md)
+* [Algebraic Effects](algeff.md)
 * [Effects](effects.md)
 * [Handlers](handlers.md)
 * [Actions](actions.md)
