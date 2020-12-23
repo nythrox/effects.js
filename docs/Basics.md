@@ -1,4 +1,5 @@
-### How to understand Algebraic Effects from an Object-Oriented background
+### Algebraic Effects
+How do algebraic effects work? The easiest explanation I've had is to think of them like try/catch:
 
 - Effects are like exceptions
 

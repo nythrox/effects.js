@@ -15,51 +15,47 @@ Algebraic effects bring a multitude of advantages:
 
 It's easier to understand what it allows by seeing it in action:
 
+Note: All of this is written in a highly testable manner, so all the functions can be easily switched to have a test/production/alternative version
+
 ```javascript
   // write your program in direct style using the generator do notation
-  const programDirectStyle = function*() {
-     // dependency injection
-     const auth = yield dependency('auth') 
+  const onUserClick = eff(function* () {
+     // get the current request from express
+     const auth = yield request() 
+
+     // await for async call
+     const user = yield getUser(auth.user.id) 
      
-     // run this every time the stream gets a new item
-     const mouseEvent = yield subscribe(click$)
+     // throw recoverable exception
+     const token = user.token || yield raise("No token found")
+     
+     // for each subscriber in the users list of subscribers
+     const subscriber = yield forEach(user.subscribers) 
      
      // await for async call
-     const user = yield getUser(auth.userId) 
-     
-     // for each account in the users list of accounts
-     const account = yield foreach(user.accounts) 
-     
-     // await for async call
-     yield submitEvent(user, { type: 'clicked', details: mouseEvent, account }) 
-     
-     return 'logged with account ${account.name}'
-  } // after each click, returns ['logged with account account1', 'logged with account account2', ...] 
+     const result = yield sendNotification(subscriber, 'clicked', { details: mouseEvent, user, token }) 
+
+     return { user, subscriber, result }
+  }) // returns [{ user, subscriber1, result1 }, { user, subscriber2, result2 }, ...], 
+     // the return value depends on how you use the handlers 
 ```
 
- <a href="https://github.com/nythrox/effects.js/blob/master/docs/examples.md">You can find the full example and others here</a>.
-
-### Limitations of this library:
-In a `callback` handler, can only call `exec` while the handler is still running, you can not save it somewher else (tearoff) and call it later
-You can only resume continuations inside of handlers (you cannot `tearoff` the callback and use it after the handler has returned)
-
+### Performance
+See <a href="https://github.com/nythrox/effects.js/blob/master/tests/benchmark.test.js">benchmarks</a>, it is expected to perform better than using native Promises (although they can't really be compared, because Algebraic Effects completely encapsulates Promises and is infinitely more extensible). 
+Still, just like async/await code (or javascript code in general), it should not be used for cpu-heavy computations, only for non-blocking IO.
 
 ### Stack-safety
-It's stack-safe!
+It's 100% stack-safe!
 
-### Performance
-See <a href="https://github.com/nythrox/effects.js/blob/master/tests/benchmark.test.js">benchmarks</a>, it is expected to perform better than using native Promises (although they can't really be compared because Algebraic Effects completely encapsulates Promises and is infinitely more extensible). 
-Still, just like async await code (or javascript code in general), it should not be used for cpu-heavy computations, but only for non-blocking IO.
+### Limitations of this library:
+1. In a `callback` handler, can only call `exec` while the handler is still running, you can not save it somewhere else (tearoff) and call it later after the handler has returned (meaning you can only resume continuations inside a handler).
+2. The scope is more limited, in some Algebraic Effect languages like `koka` the scope when calling `resume` is more dynamic, but here you can't change the handler scope when calling resume.
 
 ### Assistance is wanted
 Feel free to create PRs or issues about bugs, suggestions, code review, questions, similar ideas, improvements, etc. You can also get in contact with <a href="https://github.com/nythrox"> me</a>, don't be shy to send a message!
    
 ### TODO:
-- Benchmarks
 - Make a do notation babel plugin to compile the generator into chains
 - Make a typescript version
-- API documentation
-- Add more core effects and better the existing ones to have a better performance
 - Expose API functions that work only with generators, and API functions that work with raw monads and continuations
-- Explain how delimited continuations work with algebaric effects, how the resume() works, what then() does, etc.
 - Get rid of limitations
