@@ -5,117 +5,106 @@ const {
   pipe,
   id,
 } = require("./utils");
-
-const _chain = function (chainer) {
-  return chain(chainer)(this);
+const c = function (chainer) {
+  return new Chain(chainer, this);
 };
-const _map = function (mapper) {
-  return map(mapper)(this);
+const m = function (mapper) {
+  return new Chain((e) => pure(mapper(e)), this);
 };
-const finishHandler = (value) => ({
-  value,
-  type: "FinishHandler",
-  chain: _chain,
-  map: _map,
-});
+class Of {
+  constructor(value) {
+    this.value = value;
+  }
+}
+Of.prototype.chain = c;
+Of.prototype.map = m;
+class Chain {
+  constructor(chainer, after) {
+    this.chainer = chainer;
+    this.after = after;
+  }
+}
+Chain.prototype.chain = c;
+Chain.prototype.map = m;
+class Perform {
+  constructor(key, value) {
+    this.key = key;
+    this.value = value;
+  }
+}
+Perform.prototype.chain = c;
+Perform.prototype.map = m;
+class Handler {
+  constructor(handlers, program) {
+    this.handlers = handlers;
+    this.program = program;
+  }
+}
+Handler.prototype.chain = c;
+Handler.prototype.map = m;
+class Resume {
+  constructor(value) {
+    this.value = value;
+  }
+}
+Resume.prototype.chain = c;
+Resume.prototype.map = m;
 
-/**
- * Creates a action (monad) that returns a value `value`
- * @param value
- */
-const pure = (value) => ({
-  value,
-  type: "Pure",
-  chain: _chain,
-  map: _map,
-});
+class MultiCallback {
+  constructor(callback) {
+    this.callback = callback;
+  }
+}
+MultiCallback.prototype.chain = c;
+MultiCallback.prototype.map = m;
+class SingleCallback {
+  constructor(callback) {
+    this.callback = callback;
+  }
+}
+SingleCallback.prototype.chain = c;
+SingleCallback.prototype.map = m;
+class FinishHandler {
+  constructor(value) {
+    this.value = value;
+  }
+}
+FinishHandler.prototype.chain = c;
+FinishHandler.prototype.map = m;
+const finishHandler = (value) => new FinishHandler(value);
+const pure = (value) => new Of(value);
 
-const chain = (chainer) => (action) => ({
-  chainer,
-  after: action,
-  type: "Chain",
-  chain: _chain,
-  map: _map,
-});
+const chain = (chainer) => (action) => new Chain(chainer, action);
 
-/**
- * Transforms the value inside an Action (monad)
- * @param mapper
- */
-const map = (mapper) => (action) => chain((val) => pure(mapper(val)))(action);
+const map = (mapper) => (action) =>
+  new Chain((val) => pure(mapper(val)), action);
 
-/**
- * Creates an effect
- * @param key key of the effect to later be handled in a map
- * @param value value to be passed to the handler
- */
+const effect = (key) => (value) => new Perform(key, value);
 
-const effect = (key) => (value) => ({
-  key,
-  value,
-  type: "Effect",
-  chain: _chain,
-  map: _map,
-});
+const perform = (key, value) => new Perform(key, value);
 
-const perform = (key, value) => effect(key)(value);
-/**
- * Provides handlers to the program passed in the `program` ar
- * @param handlers map of handlers
- * @param program program to handle
- */
-const handler = (handlers) => (program) => ({
-  handlers,
-  program,
-  type: "Handler",
-  chain: _chain,
-  map: _map,
-});
+const handler = (handlers) => (program) => new Handler(handlers, program);
 
-/**
- * This function is the same as `handler` but with the `program` argument first and `handlers` argument second
- *
- * Provides handlers to the program passed in the `program` arg
- * @param program program to handle
- * @param handlers map of handlers
- */
-const handle = (program) => (handlers) => handler(handlers)(program);
-const resume = (value) => ({
-  value,
-  type: "Resume",
-  chain: _chain,
-  map: _map,
-});
-const callback = (callback) => ({
-  callback,
-  type: "MultiCallback",
-  chain: _chain,
-  map: _map,
-});
-const singleCallback = (callback) => ({
-  callback,
-  type: "SingleCallback",
-  chain: _chain,
-  map: _map,
-});
+const resume = (value) => new Resume(value);
 
-const findHandlers = (key) => (array) => {
-  let handlers;
+const callback = (callback) => new MultiCallback(callback);
+const singleCallback = (callback) => new SingleCallback(callback);
+
+const findHandlers = (key) => (array) => (onError) => {
   // reverse map
   for (var i = array.length - 1; i >= 0; i--) {
     const curr = array[i];
     if (curr.handlers[key]) {
-      handlers = [curr.handlers[key], curr.context];
+      return [curr.handlers[key], curr.context];
     }
   }
-  if (!handlers) {
-    throw Error("Handler not found: " + key.toString());
-  }
-  return handlers;
+  onError(Error("Handler not found: " + key.toString()));
 };
+// todo: callback that can return void (single) or return another callback
 class Interpreter {
-  constructor(onDone, context) {
+  constructor(onDone, onError, context) {
     this.context = context;
+    this.onError = onError;
     this.onDone = onDone;
     this.isPaused = true;
   }
@@ -124,9 +113,8 @@ class Interpreter {
     while (this.context) {
       const action = this.context.action;
       const context = this.context;
-      // console.log(action);
-      switch (action.type) {
-        case "Chain": {
+      switch (action.constructor) {
+        case Chain: {
           // const nested = action.after;
           // switch (nested.type) {
           //   case "of": {
@@ -147,11 +135,11 @@ class Interpreter {
           };
           break;
         }
-        case "Pure": {
+        case Of: {
           this.return(action.value, context);
           break;
         }
-        case "SingleCallback": {
+        case SingleCallback: {
           this.context = undefined;
           action.callback((value) => {
             this.return(value, context);
@@ -161,14 +149,17 @@ class Interpreter {
           });
           break;
         }
-        case "FinishHandler": {
+        case FinishHandler: {
+          // console.log("stopping", this);
           this.context = undefined;
           const { callback, value } = action.value;
           // console.log("calling", callback.toString(), "with", value);
           callback(value);
+          // this.done()
+          // this.return(action.value, context);
           break;
         }
-        case "MultiCallback": {
+        case MultiCallback: {
           this.context = undefined;
           action.callback(
             // exec
@@ -181,7 +172,7 @@ class Interpreter {
                   finishHandler({ callback: then, value: n })
                 ),
               };
-              const i = new Interpreter(undefined, ctx);
+              const i = new Interpreter(this.onDone, this.onError, ctx);
               i.isClone = true;
               i.run();
             },
@@ -191,16 +182,29 @@ class Interpreter {
                 this.onDone(value);
               } else {
                 this.return(value, context);
-                context.prev = undefined;
                 if (this.isPaused) {
                   this.run();
                 }
               }
+            },
+            // exec in program's scope
+            (execAction) => (then) => {
+              const ctx = {
+                prev: context.prev,
+                resume: context.resume,
+                handlers: context.resume.programCtx.handlers,
+                action: execAction.chain((n) =>
+                  finishHandler({ callback: then, value: n })
+                ),
+              };
+              const i = new Interpreter(this.onDone, this.onError, ctx);
+              i.isClone = true;
+              i.run();
             }
           );
           break;
         }
-        case "Handler": {
+        case Handler: {
           const { handlers, program } = action;
           this.context = {
             prev: context,
@@ -217,14 +221,12 @@ class Interpreter {
 
           break;
         }
-        case "Effect": {
+        case Perform: {
           const { value } = action;
-          const [handler, transformCtx] = findHandlers(action.key)(
-            context.handlers
-          );
-          if (!handler || !transformCtx) {
-            return;
-          }
+          const h = findHandlers(action.key)(context.handlers)(this.onError);
+          if (!h) return;
+          const [handler, transformCtx] = h;
+
           const handlerAction = handler(value);
           const activatedHandlerCtx = {
             // 1. Make the activated handler returns to the *return transformation* parent,
@@ -240,13 +242,14 @@ class Interpreter {
           this.context = activatedHandlerCtx;
           break;
         }
-        case "Resume": {
+        case Resume: {
           // inside activatedHandlerCtx
           const { value } = action;
           const { resume } = context;
           // context of the transformer, context of the program to continue
           if (!resume) {
-            throw Error("using resume outside of handler");
+            this.onError(Error("using resume outside of handler"));
+            return;
           }
           const { transformCtx, programCtx } = resume;
           // 2. continue the main program with resumeValue,
@@ -261,7 +264,8 @@ class Interpreter {
           break;
         }
         default: {
-          throw Error("invalid instruction: " + JSON.stringify(action));
+          this.onError(Error("invalid instruction: " + JSON.stringify(action)));
+          return;
         }
       }
     }
@@ -270,18 +274,18 @@ class Interpreter {
   return(value, currCtx) {
     const prev = currCtx && currCtx.prev;
     if (prev) {
-      switch (prev.action.type) {
-        case "Handler": {
+      switch (prev.action.constructor) {
+        case Handler: {
           const { handlers } = prev.action;
           this.context = {
             resume: prev.resume,
             handlers: prev.handlers,
             prev: prev.prev,
-            action: handlers.return ? handlers.return(value) : pure(value),
+            action: handlers.return ? handlers.return(value) : new Of(value),
           };
           break;
         }
-        case "Chain": {
+        case Chain: {
           this.context = {
             handlers: prev.handlers,
             prev: prev.prev,
@@ -291,7 +295,7 @@ class Interpreter {
           break;
         }
         default: {
-          throw Error("invalid state: " + prev.action.type);
+          this.onError("invalid state");
         }
       }
     } else {
@@ -308,19 +312,6 @@ const withIo = handler({
     return resume(value);
   },
 });
-const run = (program) =>
-  new Promise((resolve, reject) => {
-    try {
-      new Interpreter((thunk) => resolve(thunk()), {
-        handlers: [],
-        prev: undefined,
-        resume: undefined,
-        action: withIo(program),
-      }).run();
-    } catch (e) {
-      reject(e);
-    }
-  });
 
 const Effect = {
   map,
@@ -352,6 +343,88 @@ const withForEach = handler({
   },
 });
 
+const raise = effect("error");
+const handleError = (handleError) =>
+  handler({
+    error: (exn) => handleError(exn),
+  });
+const toEither = handler({
+  return: (value) =>
+    pure({
+      type: "right",
+      value,
+    }),
+  error: (exn) =>
+    pure({
+      type: "left",
+      value: exn,
+    }),
+});
+const waitFor = effect("async");
+
+const withIoPromise = handler({
+  return: (value) => pure(Promise.resolve(value)),
+  async: (iopromise) =>
+    io(iopromise).chain((promise) =>
+      callback((_, done, execInProgramScope) => {
+        promise.then(done);
+        promise.catch((err) => {
+          execInProgramScope(raise(err))(done);
+        });
+      }).chain(resume)
+    ),
+  // .chain((promise) =>
+  //   singleCallback((done) => {
+  //     promise.then((value) =>
+  //       done({
+  //         success: true,
+  //         value
+  //       })
+  //     );
+  //     promise.catch((error) => {
+  //       done({
+  //         success: false,
+  //         error
+  //       });
+  //     });
+  //   })
+  // )
+  // .chain((res) => {
+  //   if (res.success) {
+  //     return resume(res.value);
+  //   } else {
+  //     return raise(res.error);
+  //   }
+  // })
+});
+class UncaughtError extends Error {
+  constructor(value) {
+    super("Uncaught Error");
+    this.value = value;
+  }
+}
+const run = (program) =>
+  new Promise((resolve, reject) => {
+    const p = pipe(program, withIoPromise, toEither, withIo);
+    new Interpreter(
+      (thunk) => {
+        const either = thunk();
+        if (either.type === "right") {
+          resolve(either.value);
+        } else {
+          reject(new UncaughtError(either.value));
+        }
+      },
+      reject,
+      {
+        handlers: [],
+        prev: undefined,
+        resume: undefined,
+        action: p,
+      }
+    ).run();
+  });
+
 module.exports = {
   flow,
   pipe,
@@ -368,16 +441,14 @@ module.exports = {
   chain,
   pure,
   map,
-  handle,
   handler,
   resume,
   perform,
   effect,
   Effect,
-  eff
+  toEither,
+  waitFor,
+  withIoPromise,
+  raise,
+  handleError,
 };
-
-
-const timeout = handler({
-  
-})
