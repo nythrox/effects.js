@@ -1,10 +1,11 @@
 ## Effects.js
 Algebraic effects in javascript with scoped handlers, multishot delimited continuations and do notation
 
+https://nythrox.github.io/effects.js
 ### What are Algebraic Effects?
 Algebraic effects are based on two primary concepts: effects and handlers. Effects are just a representation of an action that can be performed. Handlers will catch the performed effects and can choose to resume the continuation with a result (like a promise), resume the continuation multiple times (like a stream), or not resume at all and cancel the computation (like an exception). Handlers can also transform the result of the computation (into a promise, a stream, an array, etc). 
 
-<a href="https://github.com/nythrox/effects.js/blob/master/Algebraic-Effects.md">You can learn more about algebraic effects here</a>. 
+To better understand this library, remember to read the <a href="https://nythrox.github.io/effects.js">docs!</a>. 
 
 Algebraic effects bring a multitude of advantages: 
 - dependency injection
@@ -14,8 +15,6 @@ Algebraic effects bring a multitude of advantages:
 - many control flow constructs can be expressed with only algebraic effects: async/await, coroutines/fibers, generators, exceptions, backtracking, and more
 
 It's easier to understand what it allows by seeing it in action:
-
-Note: All of this is written in a highly testable manner, so all the functions can be easily switched to have a test/production/alternative version
 
 ```javascript
   // write your program in direct style using the generator do notation
