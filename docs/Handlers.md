@@ -1,3 +1,10 @@
+// TODO: 
+publish in npm
+
+update example and remove stream
+
+send 2 guy at balena.io, in #javascript channel, in r/functional-programming and r/javascript
+
 ### Handlers
 
 Handlers are responsible for catching the effect call and resuming with a result (optional)
