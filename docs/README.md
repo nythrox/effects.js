@@ -2,6 +2,13 @@
 Algebraic effects in javascript with scoped handlers, multishot delimited continuations and do notation
 
 https://nythrox.github.io/effects.js
+
+# How to start?
+You can try it out at <a href="https://codesandbox.io/s/effkit-8nkwc?file=/src/index.js">codesandbox</a>, or install it in npm:
+```
+$ npm install effkit
+```
+
 ### What are Algebraic Effects?
 Algebraic effects are based on two primary concepts: effects and handlers. Effects are just a representation of an action that can be performed. Handlers will catch the performed effects and can choose to resume the continuation with a result (like a promise), resume the continuation multiple times (like a stream), or not resume at all and cancel the computation (like an exception). Handlers can also transform the result of the computation (into a promise, a stream, an array, etc). 
 

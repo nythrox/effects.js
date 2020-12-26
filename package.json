@@ -1,7 +1,7 @@
 {
-  "name": "effects.js",
+  "name": "effkit",
   "version": "1.0.0",
-  "description": "",
+  "description": "Algebraic effects in javascript with scoped handlers, multishot delimited continuations, stack safety and do notation",
   "main": "src/index.js",
   "scripts": {
     "test": "jest"
