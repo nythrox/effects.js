@@ -1,15 +1,15 @@
-## Effects.js
+# Effects.js
 Algebraic effects in javascript with scoped handlers, multishot delimited continuations and do notation
 
 https://nythrox.github.io/effects.js
 
-# How to start?
+## How to start?
 You can try it out at <a href="https://codesandbox.io/s/effkit-8nkwc?file=/src/index.js">codesandbox</a>, or install it in npm:
 ```
 $ npm install effkit
 ```
 
-### What are Algebraic Effects?
+## What are Algebraic Effects?
 Algebraic effects are based on two primary concepts: effects and handlers. Effects are just a representation of an action that can be performed. Handlers will catch the performed effects and can choose to resume the continuation with a result (like a promise), resume the continuation multiple times (like a stream), or not resume at all and cancel the computation (like an exception). Handlers can also transform the result of the computation (into a promise, a stream, an array, etc). 
 
 To learn more about algebraic effects, see <a href="https://nythrox.github.io/effects.js/#/basics">here</a>. 
@@ -56,7 +56,7 @@ Still, just like async/await code (or javascript code in general), it should not
 It's 100% stack-safe!
 
 ### Limitations of this library:
-1. In a `callback` handler, can only call `exec` while the handler is still running, you can not save it somewhere else (tearoff) and call it later after the handler has returned (meaning you can only resume continuations inside a handler). The reason for this is because `resume` isn't a true callback, but only an instruction that has to be interpreted in order to preserve stack safety.
+1. In a `callback` handler, can only call `exec` while the handler is still running, you can not save it somewhere else (tearoff) and call it later after the handler has returned (meaning you can only resume continuations inside a handler).
 2. The scope is more limited, in some Algebraic Effect languages like `koka` the scope when calling `resume` is more dynamic, but here you can't change the handler scope when calling resume.
 
 ### Assistance is wanted
