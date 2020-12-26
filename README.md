@@ -19,7 +19,7 @@ Algebraic effects bring a multitude of advantages:
 - programming in direct-style (like async await - but for any data structure: streams, arrays, etc)
 - combining monads
 - maintaining pure (referentially transparent) code while working with effects
-- many control flow constructs can be expressed with only algebraic effects: async/await, coroutines/fibers, generators, exceptions, backtracking, and more
+- many control flow constructs can be expressed with only algebraic effects: async/await, coroutines/fibers, generators, exceptions, backtracking, hooks, and more
 
 It's easier to understand what it allows by seeing it in action:
 
