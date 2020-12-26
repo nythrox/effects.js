@@ -56,7 +56,7 @@ Still, just like async/await code (or javascript code in general), it should not
 It's 100% stack-safe!
 
 ### Limitations of this library:
-1. In a `callback` handler, can only call `exec` while the handler is still running, you can not save it somewhere else (tearoff) and call it later after the handler has returned (meaning you can only resume continuations inside a handler).
+1. In a `callback` handler, can only call `exec` while the handler is still running, you can not save it somewhere else (tearoff) and call it later after the handler has returned (meaning you can only resume continuations inside a handler). The reason for this is because `resume` isn't a true callback, but only an instruction that has to be interpreted in order to preserve stack safety.
 2. The scope is more limited, in some Algebraic Effect languages like `koka` the scope when calling `resume` is more dynamic, but here you can't change the handler scope when calling resume.
 
 ### Assistance is wanted
