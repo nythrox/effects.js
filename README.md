@@ -12,7 +12,7 @@ $ npm install effkit
 ## What are Algebraic Effects?
 Algebraic effects are based on two primary concepts: effects and handlers. Effects are just a representation of an action that can be performed. Handlers will catch the performed effects and can choose to resume the continuation with a result (like a promise), resume the continuation multiple times (like a stream), or not resume at all and cancel the computation (like an exception). Handlers can also transform the result of the computation (into a promise, a stream, an array, etc). 
 
-To learn more about algebraic effects, see <a href="https://nythrox.github.io/effects.js/#/basics">here</a>. 
+To learn more about algebraic effects, see <a href="https://nythrox.github.io/effects.js/#/effects">here</a>. 
 
 Algebraic effects bring a multitude of advantages: 
 - dependency injection
