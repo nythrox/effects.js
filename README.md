@@ -12,14 +12,14 @@ $ npm install effkit
 ## What are Algebraic Effects?
 Algebraic effects are based on two primary concepts: effects and handlers. Effects are just a representation of an action that can be performed. Handlers will catch the performed effects and can choose to resume the continuation with a result (like a promise), resume the continuation multiple times (like a stream), or not resume at all and cancel the computation (like an exception). Handlers can also transform the result of the computation (into a promise, a stream, an array, etc). 
 
-To learn more about algebraic effects, see <a href="https://nythrox.github.io/effects.js/#/basics">here</a>. 
+To learn more about algebraic effects, see <a href="https://nythrox.github.io/effects.js/#/algeff">here</a>. 
 
 Algebraic effects bring a multitude of advantages: 
 - dependency injection
 - programming in direct-style (like async await - but for any data structure: streams, arrays, etc)
 - combining monads
 - maintaining pure (referentially transparent) code while working with effects
-- many control flow constructs can be expressed with only algebraic effects: async/await, coroutines/fibers, generators, exceptions, backtracking, hooks, and more
+- many control flow constructs can be expressed with only algebraic effects: async/await, coroutines/fibers, generators, exceptions, backtracking, react hooks/suspense, and more
 
 It's easier to understand what it allows by seeing it in action:
 
