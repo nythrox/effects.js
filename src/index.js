@@ -90,13 +90,17 @@ const resume = (value) => new Resume(value);
 const callback = (callback) => new MultiCallback(callback);
 const singleCallback = (callback) => new SingleCallback(callback);
 
-const findHandlers = (key) => (array) => (onError) => {
-  // reverse map
-  for (var i = array.length - 1; i >= 0; i--) {
-    const curr = array[i];
-    if (curr.handlers[key]) {
-      return [curr.handlers[key], curr.context];
+const findHandlers = (key) => (context) => (onError) => {
+  let curr = context;
+  while (curr) {
+    const action = curr.action;
+    if (curr.action.constructor === Handler) {
+      const handler = action.handlers[key];
+      if (handler) {
+        return [handler, curr.transformCtx];
+      }
     }
+    curr = curr.prev;
   }
   onError(Error("Handler not found: " + key.toString()));
 };
@@ -206,34 +210,25 @@ class Interpreter {
         }
         case Handler: {
           const { handlers, program } = action;
-          this.context = {
+          const transformCtx = {
             prev: context,
-            action: program,
-            resume: context.resume,
-            handlers: [
-              ...context.handlers,
-              {
-                handlers,
-                context,
-              },
-            ],
+            action: handlers.return ? program.chain(handlers.return) : program,
           };
-
+          context.transformCtx = transformCtx;
+          this.context = transformCtx;
           break;
         }
         case Perform: {
           const { value } = action;
-          const h = findHandlers(action.key)(context.handlers)(this.onError);
+          const h = findHandlers(action.key)(context)(this.onError);
           if (!h) return;
           const [handler, transformCtx] = h;
-
           const handlerAction = handler(value);
           const activatedHandlerCtx = {
             // 1. Make the activated handler returns to the *return transformation* parent,
             // and not to the *return transformation* directly (so it doesn't get transformed)
             prev: transformCtx.prev,
             action: handlerAction,
-            handlers: transformCtx.handlers,
             resume: {
               transformCtx,
               programCtx: context,
@@ -245,22 +240,19 @@ class Interpreter {
         case Resume: {
           // inside activatedHandlerCtx
           const { value } = action;
-          const { resume } = context;
           // context of the transformer, context of the program to continue
           if (!resume) {
             this.onError(Error("using resume outside of handler"));
             return;
           }
-          const { transformCtx, programCtx } = resume;
-          // 2. continue the main program with resumeValue,
-          // and when it finishes, let it go all the way through the *return* transformation proccess
-          // /\ it goes all the way beacue it goes to programCtx.prev (before perform) that will eventuallyfall to transform
-          // this.context = programCtx.nextInstruction(value);
-          this.return(value, programCtx);
-          // this.nextInstruction(value, programCtx);
+          const { transformCtx, programCtx } = context.resume;
           // 3. after the transformation is done, return to the person chaining `resume`
           // /\ when the person chaining resume (activatedHandlerCtx) is done, it will return to the transform's parent
           transformCtx.prev = context.prev;
+          // 2. continue the main program with resumeValue,
+          // and when it finishes, let it go all the way through the *return* transformation proccess
+          // /\ it goes all the way beacue it goes to programCtx.prev (before perform) that will eventuallyfall to transform
+          this.return(value, programCtx);
           break;
         }
         default: {
@@ -276,13 +268,7 @@ class Interpreter {
     if (prev) {
       switch (prev.action.constructor) {
         case Handler: {
-          const { handlers } = prev.action;
-          this.context = {
-            resume: prev.resume,
-            handlers: prev.handlers,
-            prev: prev.prev,
-            action: handlers.return ? handlers.return(value) : new Of(value),
-          };
+          this.return(value, prev);
           break;
         }
         case Chain: {
