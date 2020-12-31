@@ -3,7 +3,7 @@ const {
   makeMultishotGeneratorDo,
   flow,
   pipe,
-  id,
+  id
 } = require("./utils");
 const c = function (chainer) {
   return new Chain(chainer, this);
@@ -50,28 +50,10 @@ class Resume {
 Resume.prototype.chain = c;
 Resume.prototype.map = m;
 
-class MultiCallback {
-  constructor(callback) {
-    this.callback = callback;
-  }
-}
-MultiCallback.prototype.chain = c;
-MultiCallback.prototype.map = m;
-class SingleCallback {
-  constructor(callback) {
-    this.callback = callback;
-  }
-}
-SingleCallback.prototype.chain = c;
-SingleCallback.prototype.map = m;
-class FinishHandler {
-  constructor(value) {
-    this.value = value;
-  }
-}
-FinishHandler.prototype.chain = c;
-FinishHandler.prototype.map = m;
-const finishHandler = (value) => new FinishHandler(value);
+class Break {}
+Break.prototype.chain = c;
+Break.prototype.map = m;
+export const stop = () => new Break();
 const pure = (value) => new Of(value);
 
 const chain = (chainer) => (action) => new Chain(chainer, action);
@@ -86,26 +68,37 @@ const perform = (key, value) => new Perform(key, value);
 const handler = (handlers) => (program) => new Handler(handlers, program);
 
 const resume = (value) => new Resume(value);
-
-const callback = (callback) => new MultiCallback(callback);
-const singleCallback = (callback) => new SingleCallback(callback);
-
-const findHandlers = (key) => (array) => (onError) => {
+const resume$ = (interpreter) => (value) => {
+  interpreter.return(value, interpreter.lastStop.context);
+  interpreter.lastStop = undefined;
+  if (interpreter.isPaused) {
+    interpreter.run();
+  }
+};
+const findHandlers = (key) => (context) => (onError) => {
   // reverse map
-  for (var i = array.length - 1; i >= 0; i--) {
-    const curr = array[i];
-    if (curr.handlers[key]) {
-      return [curr.handlers[key], curr.context];
+  let curr = context;
+  while (curr) {
+    const action = curr.action;
+    if (curr.action.constructor === Handler) {
+      // console.log(curr.action.handlers);
+      const handler = action.handlers[key];
+      if (handler) {
+        // console.log("found handler", handler.toString(), curr.transformCtx);
+        return [handler, curr.transformCtx];
+      }
     }
+    curr = curr.prev;
   }
   onError(Error("Handler not found: " + key.toString()));
 };
 // todo: callback that can return void (single) or return another callback
 class Interpreter {
-  constructor(onDone, onError, context) {
+  constructor(onDone, onError, context, resume) {
     this.context = context;
     this.onError = onError;
     this.onDone = onDone;
+    this.resume = resume;
     this.isPaused = true;
   }
   run() {
@@ -113,25 +106,23 @@ class Interpreter {
     while (this.context) {
       const action = this.context.action;
       const context = this.context;
+      // console.log(action, context);
       switch (action.constructor) {
         case Chain: {
           // const nested = action.after;
           // switch (nested.type) {
           //   case "of": {
           //     this.context = {
-          //       handlers: context.handlers,
           //       prev: context.prev,
-          //       resume: context.resume,
           //       action: action.chainer(nested.value)
           //     };
           //     break;
           //   }
           //   default: {}}
           this.context = {
-            handlers: context.handlers,
+            // handlers: context.handlers,
             prev: context,
-            resume: context.resume,
-            action: action.after,
+            action: action.after
           };
           break;
         }
@@ -139,105 +130,52 @@ class Interpreter {
           this.return(action.value, context);
           break;
         }
-        case SingleCallback: {
+        case Break: {
+          this.lastStop = { context };
           this.context = undefined;
-          action.callback((value) => {
-            this.return(value, context);
-            if (this.isPaused) {
-              this.run();
-            }
-          });
-          break;
-        }
-        case FinishHandler: {
-          // console.log("stopping", this);
-          this.context = undefined;
-          const { callback, value } = action.value;
-          // console.log("calling", callback.toString(), "with", value);
-          callback(value);
-          // this.done()
-          // this.return(action.value, context);
-          break;
-        }
-        case MultiCallback: {
-          this.context = undefined;
-          action.callback(
-            // exec
-            (execAction) => (then) => {
-              const ctx = {
-                prev: context.prev,
-                resume: context.resume,
-                handlers: context.handlers,
-                action: execAction.chain((n) =>
-                  finishHandler({ callback: then, value: n })
-                ),
-              };
-              const i = new Interpreter(this.onDone, this.onError, ctx);
-              i.isClone = true;
-              i.run();
-            },
-            // done
-            (value) => {
-              if (this.isClone && !context.prev) {
-                this.onDone(value);
-              } else {
-                this.return(value, context);
-                if (this.isPaused) {
-                  this.run();
-                }
-              }
-            },
-            // exec in program's scope
-            (execAction) => (then) => {
-              const ctx = {
-                prev: context.prev,
-                resume: context.resume,
-                handlers: context.resume.programCtx.handlers,
-                action: execAction.chain((n) =>
-                  finishHandler({ callback: then, value: n })
-                ),
-              };
-              const i = new Interpreter(this.onDone, this.onError, ctx);
-              i.isClone = true;
-              i.run();
-            }
-          );
+          // action.callback((value) => {
+          //   this.return(value, context);
+          //   if (this.isPaused) {
+          //     this.run();
+          //   }
+          // });
           break;
         }
         case Handler: {
           const { handlers, program } = action;
-          this.context = {
+          const transformCtx = {
             prev: context,
-            action: program,
-            resume: context.resume,
-            handlers: [
-              ...context.handlers,
-              {
-                handlers,
-                context,
-              },
-            ],
+            action: handlers.return ? program.chain(handlers.return) : program
+            // handlers: [
+            //   ...context.handlers,
+            //   {
+            //     handlers,
+            //     context
+            //   }
+            // ]
           };
+          context.transformCtx = transformCtx;
+          this.context = transformCtx;
 
           break;
         }
         case Perform: {
           const { value } = action;
-          const h = findHandlers(action.key)(context.handlers)(this.onError);
+          const h = findHandlers(action.key)(context)(this.onError);
           if (!h) return;
           const [handler, transformCtx] = h;
 
-          const handlerAction = handler(value);
+          const handlerAction = handler(value, this);
+
           const activatedHandlerCtx = {
             // 1. Make the activated handler returns to the *return transformation* parent,
             // and not to the *return transformation* directly (so it doesn't get transformed)
             prev: transformCtx.prev,
-            action: handlerAction,
-            handlers: transformCtx.handlers,
-            resume: {
-              transformCtx,
-              programCtx: context,
-            },
+            action: handlerAction
+          };
+          this.resume = {
+            transformCtx,
+            programCtx: context
           };
           this.context = activatedHandlerCtx;
           break;
@@ -245,22 +183,14 @@ class Interpreter {
         case Resume: {
           // inside activatedHandlerCtx
           const { value } = action;
-          const { resume } = context;
           // context of the transformer, context of the program to continue
           if (!resume) {
             this.onError(Error("using resume outside of handler"));
             return;
           }
-          const { transformCtx, programCtx } = resume;
-          // 2. continue the main program with resumeValue,
-          // and when it finishes, let it go all the way through the *return* transformation proccess
-          // /\ it goes all the way beacue it goes to programCtx.prev (before perform) that will eventuallyfall to transform
-          // this.context = programCtx.nextInstruction(value);
-          this.return(value, programCtx);
-          // this.nextInstruction(value, programCtx);
-          // 3. after the transformation is done, return to the person chaining `resume`
-          // /\ when the person chaining resume (activatedHandlerCtx) is done, it will return to the transform's parent
+          const { transformCtx, programCtx } = this.resume;
           transformCtx.prev = context.prev;
+          this.return(value, programCtx);
           break;
         }
         default: {
@@ -276,26 +206,19 @@ class Interpreter {
     if (prev) {
       switch (prev.action.constructor) {
         case Handler: {
-          const { handlers } = prev.action;
-          this.context = {
-            resume: prev.resume,
-            handlers: prev.handlers,
-            prev: prev.prev,
-            action: handlers.return ? handlers.return(value) : new Of(value),
-          };
+          this.return(value, prev);
           break;
         }
         case Chain: {
           this.context = {
-            handlers: prev.handlers,
             prev: prev.prev,
-            resume: prev.resume,
-            action: prev.action.chainer(value),
+            action: prev.action.chainer(value)
           };
           break;
         }
         default: {
           this.onError("invalid state");
+          return;
         }
       }
     } else {
@@ -310,7 +233,7 @@ const withIo = handler({
   io(thunk) {
     const value = thunk();
     return resume(value);
-  },
+  }
 });
 
 const Effect = {
@@ -318,7 +241,7 @@ const Effect = {
   chain,
   of: pure,
   single: makeGeneratorDo(pure)(chain),
-  do: makeMultishotGeneratorDo(pure)(chain),
+  do: makeMultishotGeneratorDo(pure)(chain)
 };
 const eff = Effect.single;
 const forEach = effect("forEach");
@@ -340,39 +263,46 @@ const withForEach = handler({
       }
     };
     return nextInstr();
-  },
+  }
 });
 
 const raise = effect("error");
 const handleError = (handleError) =>
   handler({
-    error: (exn) => handleError(exn),
+    error: (exn) => handleError(exn)
   });
 const toEither = handler({
   return: (value) =>
     pure({
       type: "right",
-      value,
+      value
     }),
   error: (exn) =>
     pure({
       type: "left",
-      value: exn,
-    }),
+      value: exn
+    })
 });
 const waitFor = effect("async");
 
 const withIoPromise = handler({
   return: (value) => pure(Promise.resolve(value)),
-  async: (iopromise) =>
-    io(iopromise).chain((promise) =>
-      callback((_, done, execInProgramScope) => {
-        promise.then(done);
-        promise.catch((err) => {
-          execInProgramScope(raise(err))(done);
-        });
-      }).chain(resume)
-    ),
+  async: (iopromise, interpreter) =>
+    io(iopromise).chain((promise) => {
+      console.log("hello");
+      promise.then(resume$(interpreter));
+      return stop();
+    })
+
+  // .chain((promise) =>
+
+  //   // callback((_, done, execInProgramScope) => {
+  //   //   promise.then(done);
+  //   //   promise.catch((err) => {
+  //   //     execInProgramScope(raise(err))(done);
+  //   //   });
+  //   }).chain(resume)
+
   // .chain((promise) =>
   //   singleCallback((done) => {
   //     promise.then((value) =>
@@ -410,14 +340,38 @@ const run = (program) =>
       },
       reject,
       {
-        handlers: [],
         prev: undefined,
         resume: undefined,
-        action: pipe(program, withIoPromise, toEither, withIo),
+        action: pipe(program, withIoPromise, toEither, withIo)
       }
     ).run();
   });
 
+const test1 = effect("test1");
+const handleTest1 = handler({
+  return: (val) => pure(["dindonutin", ...val]),
+  test1: (val) => handleTest1SecondImpl(resume(2))
+});
+const handleTest1SecondImpl = handler({
+  test1: (val) => resume(10),
+  return: (val) => pure([...val, "!"])
+});
+run(
+  // handleTest1(pure(10))
+  handleTest1(
+    eff(function* () {
+      const first = yield test1();
+      const second = yield test1();
+      const third = yield test1();
+      return [first, second, third];
+    })
+  )
+);
+.then(console.log)
+.catch(console.error);
+
+const program = waitFor(() => Promise.resolve(10));
+run(program).then(console.log).catch(console.error);
 module.exports = {
   flow,
   pipe,
@@ -429,8 +383,6 @@ module.exports = {
   io,
   withIo,
   Interpreter,
-  singleCallback,
-  callback,
   chain,
   pure,
   map,
@@ -443,5 +395,5 @@ module.exports = {
   waitFor,
   withIoPromise,
   raise,
-  handleError,
+  handleError
 };
