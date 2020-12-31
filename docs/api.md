@@ -1,5 +1,27 @@
 ### API
 
+### Pointfree vs Chainable version
+You can use the API in both ways, Pointfree or Chainable
+```javascript
+  const plusOne = effect('plusOne')
+  const withPlusOne = handler({
+      plusOne: (num) => resume(num + 1)
+  })
+
+  // pointfree
+  const program = pipe(
+    pure(10),
+    map(number => number * 2),
+    chain(n => plusOne(n)),
+    withPlusOne
+  )
+  // chainable
+  const program = withPlusOne(
+    pure(10)
+    .map(number => number * 2)
+    .chain(n => plusOne(n))
+  )
+```
 
 #### run
 > run: (action) => Promise

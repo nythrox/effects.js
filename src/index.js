@@ -291,10 +291,7 @@ class Interpreter {
 const io = effect("io");
 const withIo = handler({
   return: (value) => pure(() => value),
-  io(thunk) {
-    const value = thunk();
-    return resume(value);
-  },
+  io: (thunk) => resume(thunk()),
 });
 
 const Effect = {
