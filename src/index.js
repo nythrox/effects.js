@@ -132,7 +132,6 @@ class Interpreter {
           //   }
           //   default: {}}
           this.context = {
-            handlers: context.handlers,
             prev: context,
             resume: context.resume,
             action: action.after,
@@ -171,7 +170,6 @@ class Interpreter {
               const ctx = {
                 prev: context.prev,
                 resume: context.resume,
-                handlers: context.handlers,
                 action: execAction.chain((n) =>
                   finishHandler({ callback: then, value: n })
                 ),
@@ -196,7 +194,7 @@ class Interpreter {
               const ctx = {
                 prev: context.prev,
                 resume: context.resume,
-                handlers: context.resume.programCtx.handlers,
+                handlers: context.resume.programCtx.handlers, // TODO
                 action: execAction.chain((n) =>
                   finishHandler({ callback: then, value: n })
                 ),
@@ -213,6 +211,7 @@ class Interpreter {
           const transformCtx = {
             prev: context,
             action: handlers.return ? program.chain(handlers.return) : program,
+            resume: context.resume,
           };
           context.transformCtx = transformCtx;
           this.context = transformCtx;
@@ -242,7 +241,7 @@ class Interpreter {
           const { value } = action;
           // context of the transformer, context of the program to continue
           if (!resume) {
-            this.onError(Error("using resume outside of handler"));
+            this.onError(Error("Tried to resume outside of a handler"));
             return;
           }
           const { transformCtx, programCtx } = context.resume;
@@ -251,7 +250,7 @@ class Interpreter {
           transformCtx.prev = context.prev;
           // 2. continue the main program with resumeValue,
           // and when it finishes, let it go all the way through the *return* transformation proccess
-          // /\ it goes all the way beacue it goes to programCtx.prev (before perform) that will eventuallyfall to transform
+          // /\ it goes all the way beacue it goes to programCtx.prev (before perform) that will eventually fall to transformCtx
           this.return(value, programCtx);
           break;
         }
@@ -273,7 +272,6 @@ class Interpreter {
         }
         case Chain: {
           this.context = {
-            handlers: prev.handlers,
             prev: prev.prev,
             resume: prev.resume,
             action: prev.action.chainer(value),
@@ -396,7 +394,6 @@ const run = (program) =>
       },
       reject,
       {
-        handlers: [],
         prev: undefined,
         resume: undefined,
         action: pipe(program, withIoPromise, toEither, withIo),
