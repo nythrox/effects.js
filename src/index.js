@@ -281,7 +281,7 @@ class Interpreter {
           break;
         }
         default: {
-          this.onError("invalid state");
+          this.onError(new Error("Invalid state"));
         }
       }
     } else {
