@@ -194,7 +194,7 @@ class Interpreter {
               const ctx = {
                 prev: context.prev,
                 resume: context.resume,
-                handlers: context.resume.programCtx.handlers, // TODO
+                // handlers: context.resume.programCtx.handlers, // TODO
                 action: execAction.chain((n) =>
                   finishHandler({ callback: then, value: n })
                 ),
@@ -210,7 +210,9 @@ class Interpreter {
           const { handlers, program } = action;
           const transformCtx = {
             prev: context,
-            action: handlers.return ? program.chain(handlers.return) : program,
+            action: handlers.return
+              ? program.chain(handlers.return)
+              : program.chain(pure),
             resume: context.resume,
           };
           context.transformCtx = transformCtx;
