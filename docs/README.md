@@ -55,9 +55,6 @@ Still, just like async/await code (or javascript code in general), it should not
 ### Stack-safety
 It's 100% stack-safe!
 
-### Limitations of this library:
-In a `callback` handler, can only call `exec` while the handler is still running, you can not save it somewhere else (tearoff) and call it later after the handler has returned (meaning you can only resume continuations inside a handler).
-
 ### Assistance is wanted
 Feel free to create PRs or issues about bugs, suggestions, code review, questions, similar ideas, improvements, etc. You can also get in contact with <a href="https://github.com/nythrox"> me</a>, don't be shy to send a message!
    
@@ -77,4 +74,4 @@ Thanks so much to the people who helped me with this library! Thanks to [Ohad Ka
 - Make a do notation babel plugin to compile the generator into chains
 - Make a typescript version
 - Expose API functions that work only with generators, and API functions that work with raw monads and continuations
-- Get rid of limitations
+- Create normal handlers and control handlers (like in koka)
