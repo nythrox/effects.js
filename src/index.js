@@ -212,8 +212,8 @@ class Interpreter {
         case Perform: {
           const { args, options } = action;
           const h = findHandlers(action.key)(
-            options && context.resume && options.inContinuationScope
-              ? context.resume.programCtx
+            options && options.scope
+              ? options.scope.programCtx
               : context
           )(this.onError);
           if (!h) return;
@@ -286,7 +286,7 @@ class Interpreter {
 const io = effect("io");
 const withIo = handler({
   return: (value) => pure(() => value),
-  io: (thunk) => resume(thunk()),
+  io: (thunk, k) => resume(k, thunk()),
 });
 
 const Effect = {
@@ -301,13 +301,13 @@ const forEach = effect("forEach");
 
 const withForEach = handler({
   return: (val) => pure([val]),
-  forEach: (array) => {
+  forEach: (array, k) => {
     const nextInstr = (newArr = []) => {
       if (array.length === 0) {
         return pure(newArr);
       } else {
         const first = array.shift();
-        return resume(first).chain((a) => {
+        return resume(k, first).chain((a) => {
           for (const item of a) {
             newArr.push(item);
           }
@@ -322,7 +322,7 @@ const withForEach = handler({
 const raise = effect("error");
 const handleError = (handleError) =>
   handler({
-    error: (exn) => handleError(exn),
+    error: (exn, k) => handleError(k, exn),
   });
 const toEither = handler({
   return: (value) =>
@@ -340,7 +340,7 @@ const waitFor = effect("async");
 
 const withIoPromise = handler({
   return: (value) => pure(Promise.resolve(value)),
-  async: (iopromise) =>
+  async: (iopromise, k) =>
     io(iopromise).chain((promise) =>
       callback((exec, done) => {
         promise.then(done).catch((err) => {
@@ -348,36 +348,13 @@ const withIoPromise = handler({
             pipe(
               raise(err),
               options({
-                inContinuationScope: true,
+                scope: k,
               })
             )
           )(done);
         });
-      }).chain(resume)
+      }).chain((val) => resume(k, val))
     ),
-  // .chain((promise) =>
-  //   singleCallback((done) => {
-  //     promise.then((value) =>
-  //       done({
-  //         success: true,
-  //         value
-  //       })
-  //     );
-  //     promise.catch((error) => {
-  //       done({
-  //         success: false,
-  //         error
-  //       });
-  //     });
-  //   })
-  // )
-  // .chain((res) => {
-  //   if (res.success) {
-  //     return resume(res.value);
-  //   } else {
-  //     return raise(res.error);
-  //   }
-  // })
 });
 const run = (program) =>
   new Promise((resolve, reject) => {

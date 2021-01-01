@@ -38,7 +38,7 @@ describe("ioPromise error", () => {
   it("should be automatically handled ", async () => {
     const program = pipe(
       waitFor(() => Promise.reject("bad")),
-      handleError((err) => pure(30))
+      handleError((err, k) => pure(30))
     );
     expect(await run(program)).toEqual(30);
   });
@@ -48,7 +48,7 @@ describe("exception effect", () => {
   it("should be caught", async () => {
     const program = pipe(
       raise(1),
-      handleError(() => pure(10))
+      handleError((err, k) => pure(10))
     );
     expect(await run(program)).toEqual(10);
   });

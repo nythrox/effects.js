@@ -7,17 +7,20 @@ const {
   singleCallback,
 } = require("../src");
 const testEff = effect("test");
-const newPromise = () => new Promise((resolve, reject) => setImmediate(resolve));
+const newPromise = () =>
+  new Promise((resolve, reject) => setImmediate(resolve));
 
 const withTest1Handler = handler({
-  test: () => resume(),
+  test: (k) => resume(k),
 });
 
 const withTest2Handler = handler({
-  test: () => callback((exec, done) => setImmediate(done)).chain(resume),
+  test: (k) =>
+    callback((exec, done) => setImmediate(done)).chain((val) => resume(k, val)),
 });
 const withTest3Handler = handler({
-  test: () => singleCallback((done) => setImmediate(done)).chain(resume),
+  test: (k) =>
+    singleCallback((done) => setImmediate(done)).chain((val) => resume(k, val)),
 });
 
 function eff(n) {
@@ -50,6 +53,13 @@ describe("benchmarks", () => {
     expect(test1Time).toBeLessThan(promiseTime);
     expect(test2Time).toBeLessThan(promiseTime);
     expect(test3Time).toBeLessThan(promiseTime);
-    console.log(promiseTime, test1Time, test2Time, test3Time);
+    console.log(
+      "promise: ",
+      promiseTime,
+      "eff: ",
+      test1Time,
+      test2Time,
+      test3Time
+    );
   });
 });
