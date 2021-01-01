@@ -15,7 +15,7 @@ const withLog = handler({
 
 Inside the map of handlers, each key should be a function that will handle an effect (of the same key), and the `return` function is a special function that transforms the result of the handled action (it is optional)
 
-If you want to resume asynchronously, you can use the `callback` and `singleCallback` actions (see in API)
+If you want to resume asynchronously, you can use the `singleCallback` action (see in API)
 
 You can also use the generator version
 

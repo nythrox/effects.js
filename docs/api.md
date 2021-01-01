@@ -79,27 +79,6 @@ run(program).then(console.log).catch(console.error)
 // logs 30
 ```
 
-#### callback
-> callback: (cb: (exec: (Action) => (execCb: (value) => void) => void, done: (value) => void) => void) => Action
-
-`exec: (Action) => (execCb: (value) => void) => void` : will execute any action in the current handler stack (so you can resume the program or perform other effects inside the handler) and then calls the `execCb` callback with the result. 
-This can be called multiple times, but only while the handler is still executing (see more at `limitations` of the README)
-
-`done: (value) => void` should be called when the callback action is done, passing in the end result of the action. this should only be called once
-
-`execInProgramScope: (Action) => (execCb: (value) => void) => void` : does the same thing as `exec`, but the scope of the handlers is the same of the program that yielded (useful in some ocasions)
-
-
-```javascript
-const exampleCallbackAction = callback((exec, done) => {
-  callback((exec, done) => {
-    exec(resume(10))((value) => {
-      /// do something
-      done("end callback effect")
-    })
-  })
-```
-
 #### singleCallback
 > singleCallback: (cb: (done: (value) => void) => void)
 
