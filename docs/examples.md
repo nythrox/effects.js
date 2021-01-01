@@ -63,7 +63,7 @@ Here are a few examples of effects and handlers you can create
         withForEach
      )
      // run the program and await the result
-     // note: the program can throw `unhandled handler` and `unhandled exception` 
+     // note: the program can throw `unhandled handler` and `unhandled exception`
      const result = await run(handledProgram)
      res.json({
         data: result
@@ -72,7 +72,7 @@ Here are a few examples of effects and handlers you can create
 
 ```
 
-You could also write your program without using generator functions:
+You could also write your program without using generator functions using the pointfree api:
 
 ```javascript
   const programPointfree = pipe(
@@ -89,7 +89,7 @@ You could also write your program without using generator functions:
   )
 
   pipe(
-    program,
+    programPointfree,
     Effect.do,
     withAuthDependencies,
     withForeach,
@@ -98,6 +98,16 @@ You could also write your program without using generator functions:
     run,
     (stream) => stream.subscribe(console.log)
   ) // after each click, logs ['logged with account account1', 'logged with account account2', ...]
+```
+
+Or using the chain api
+
+```javascript
+   const programChain = dependency('auth').
+      chain(auth => cps(window.onclick)
+         .chain(mouseEvent => getUser(auth.loggedInId)
+            .chain(user => 
+               submitEvent(user, {type: 'clicked', details: mouseEvent}))))
 ```
 
 ### Exceptions

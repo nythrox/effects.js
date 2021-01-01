@@ -5,9 +5,9 @@ To create a handler you can use the curried function `handler`, which receives a
 
 ```javascript
 const withLog = handler({
-  // optional return: (value) => eff(function* () { return value }),
-  logEffect: (value) => eff(function* () {
-    console.log(value);
+  // optional return: (values) => eff(function* () { return value }),
+  logEffect: (...values) => eff(function* () {
+    console.log(values);
     return resume()
   }),
 });
@@ -24,8 +24,8 @@ const withLog = handler({
   return: (value) => eff(function* () {
     return value;
   }),
-  logEffect: (value) => eff(function* () {
-    console.log(value);
+  logEffect: (...values) => eff(function* () {
+    console.log(values);
     const result = yield resume(undefined);
     return result;
   }),
@@ -45,7 +45,7 @@ You can learn more about how this works in <a href="https://awesomereact.com/vid
 
 #### Resume
 
-Calling resume will not only resume the program with a value, but also returns the result of the resumed program after it finishes running up to the point of the handler.
+Calling resume will resume the program with a value, and then return the result of the resumed program after it finishes running up to the point of the handler.
 
 ### Return
 

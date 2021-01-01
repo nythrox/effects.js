@@ -62,7 +62,7 @@ const doubleNumberChained = pipe(
 
 Effect lets you perform an effect and get the result from the handlers (or it throws an Exception if no handlers are found)
 
-The `effect` function receives an argument with the effects key, and then the value to be passed onto the handler
+The `effect` function receives an argument with the effects key, and then the values to be passed onto the handler
 
 ```javascript
 // plusOne: (number) => Action<number>
@@ -79,10 +79,10 @@ Handlers let you catch effects and choose what to do with the continuation
 ```javascript
    // withPlusOne: (action) => Action
    const withPlusOne = handler({
-      plusOne: (number) => ...
+      plusOne: (number) => resume(number + 1)
    })
    // program: Action<2>
-   const program = withPlusOne(plusOne(1))  // wrap the program with the handler to handler it
+   const program = withPlusOne(plusOne(1))  // wrap the program with the handler to handle it
 ```
 
 ### Running the Program

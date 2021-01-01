@@ -6,7 +6,7 @@ An Effect will find the closest handler and activate it, then receive the value 
 Effects should be used to model anything that could make a function impure - IO operations (logging, db calls, api calls - any interaction with the ouside world), exceptions, global mutation (or any interaction with outside of the function), nullable values, etc. This will make it really easy to test and better understand your code, guaranteeing referential transparency and allowing you to easily have dependency injection. 
 
 To create an effect, you can use the curried `effect` function with the effects' key
-> effect: (key) => (value) => Action
+> effect: (key) => (...args) => Action
 The `effect` function receives an argument with the effects key, and then the value to be passed onto the handler 
 ```javascript
 const log = effect('logEffect')

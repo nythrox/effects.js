@@ -29,9 +29,9 @@ const getMessage = effect("getMessageEffect");
 ```javascript
 const program = eff(function* () {
   // perform waitMs effect
-  yield* waitMs(500);
+  yield waitMs(500);
   // perform getMessage effect
-  const message = yield* getMessage();
+  const message = yield getMessage();
   return "done waiting, message: " + message;
 });
 ```
@@ -47,7 +47,7 @@ const withGetMessage = handler({
 
 const withWaitMs = handler({
   waitMsEffect: (milliseconds) => {
-    return callback((done) => setTimeout(done, milliseconds)).chain(() => resume())
+    return singleCallback((done) => setTimeout(done, milliseconds)).chain(() => resume())
   }
 });
 ```

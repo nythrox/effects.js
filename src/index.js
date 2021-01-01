@@ -27,9 +27,9 @@ class Chain {
 Chain.prototype.chain = c;
 Chain.prototype.map = m;
 class Perform {
-  constructor(key, value) {
+  constructor(key, args) {
     this.key = key;
-    this.value = value;
+    this.args = args;
   }
 }
 Perform.prototype.chain = c;
@@ -79,9 +79,9 @@ const chain = (chainer) => (action) => new Chain(chainer, action);
 const map = (mapper) => (action) =>
   new Chain((val) => pure(mapper(val)), action);
 
-const effect = (key) => (value) => new Perform(key, value);
+const effect = (key) => (...args) => new Perform(key, args);
 
-const perform = (key, value) => new Perform(key, value);
+const perform = (key, ...args) => new Perform(key, args);
 
 const handler = (handlers) => (program) => new Handler(handlers, program);
 
@@ -218,11 +218,11 @@ class Interpreter {
           break;
         }
         case Perform: {
-          const { value } = action;
+          const { args } = action;
           const h = findHandlers(action.key)(context)(this.onError);
           if (!h) return;
           const [handler, transformCtx] = h;
-          const handlerAction = handler(value);
+          const handlerAction = handler(...args);
           const activatedHandlerCtx = {
             // 1. Make the activated handler returns to the *return transformation* parent,
             // and not to the *return transformation* directly (so it doesn't get transformed)
