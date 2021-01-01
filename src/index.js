@@ -51,14 +51,6 @@ class Resume {
 }
 Resume.prototype.chain = c;
 Resume.prototype.map = m;
-
-class MultiCallback {
-  constructor(callback) {
-    this.callback = callback;
-  }
-}
-MultiCallback.prototype.chain = c;
-MultiCallback.prototype.map = m;
 class SingleCallback {
   constructor(callback) {
     this.callback = callback;
@@ -66,14 +58,7 @@ class SingleCallback {
 }
 SingleCallback.prototype.chain = c;
 SingleCallback.prototype.map = m;
-class FinishHandler {
-  constructor(value) {
-    this.value = value;
-  }
-}
-FinishHandler.prototype.chain = c;
-FinishHandler.prototype.map = m;
-const finishHandler = (value) => new FinishHandler(value);
+
 const pure = (value) => new Of(value);
 
 const chain = (chainer) => (action) => new Chain(chainer, action);
@@ -92,8 +77,6 @@ const perform = (key, ...args) => new Perform(key, args);
 const handler = (handlers) => (program) => new Handler(handlers, program);
 
 const resume = (continuation, value) => new Resume(continuation, value);
-
-const callback = (callback) => new MultiCallback(callback);
 
 const singleCallback = (callback) => new SingleCallback(callback);
 
@@ -158,45 +141,6 @@ class Interpreter {
           });
           break;
         }
-        case FinishHandler: {
-          // console.log("stopping", this);
-          this.context = undefined;
-          const { callback, value } = action.value;
-          // console.log("calling", callback.toString(), "with", value);
-          callback(value);
-          // this.done()
-          // this.return(action.value, context);
-          break;
-        }
-        case MultiCallback: {
-          this.context = undefined;
-          action.callback(
-            // exec
-            (execAction) => (then) => {
-              const ctx = {
-                prev: context.prev,
-                action: execAction.chain((n) =>
-                  finishHandler({ callback: then, value: n })
-                ),
-              };
-              const i = new Interpreter(this.onDone, this.onError, ctx);
-              i.isClone = true;
-              i.run();
-            },
-            // done
-            (value) => {
-              if (this.isClone && !context.prev) {
-                this.onDone(value);
-              } else {
-                this.return(value, context);
-                if (this.isPaused) {
-                  this.run();
-                }
-              }
-            }
-          );
-          break;
-        }
         case Handler: {
           const { handlers, program } = action;
           const transformCtx = {
@@ -212,9 +156,7 @@ class Interpreter {
         case Perform: {
           const { args, options } = action;
           const h = findHandlers(action.key)(
-            options && options.scope
-              ? options.scope.programCtx
-              : context
+            options && options.scope ? options.scope.programCtx : context
           )(this.onError);
           if (!h) return;
           const [handler, transformCtx] = h;
@@ -342,18 +284,21 @@ const withIoPromise = handler({
   return: (value) => pure(Promise.resolve(value)),
   async: (iopromise, k) =>
     io(iopromise).chain((promise) =>
-      callback((exec, done) => {
-        promise.then(done).catch((err) => {
-          exec(
-            pipe(
-              raise(err),
-              options({
-                scope: k,
-              })
-            )
-          )(done);
-        });
-      }).chain((val) => resume(k, val))
+      singleCallback((done) => {
+        promise
+          .then((value) => {
+            done({ success: true, value });
+          })
+          .catch((error) => {
+            done({ success: false, error });
+          });
+      }).chain((res) =>
+        res.success
+          ? resume(k, res.value)
+          : options({
+              scope: k,
+            })(raise(res.value)).chain((e) => resume(k, e))
+      )
     ),
 });
 const run = (program) =>
@@ -388,7 +333,6 @@ module.exports = {
   withIo,
   Interpreter,
   singleCallback,
-  callback,
   chain,
   pure,
   map,

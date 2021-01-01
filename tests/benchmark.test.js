@@ -3,7 +3,6 @@ const {
   handler,
   resume,
   run,
-  callback,
   singleCallback,
 } = require("../src");
 const testEff = effect("test");
@@ -15,10 +14,6 @@ const withTest1Handler = handler({
 });
 
 const withTest2Handler = handler({
-  test: (k) =>
-    callback((exec, done) => setImmediate(done)).chain((val) => resume(k, val)),
-});
-const withTest3Handler = handler({
   test: (k) =>
     singleCallback((done) => setImmediate(done)).chain((val) => resume(k, val)),
 });
@@ -46,20 +41,14 @@ describe("benchmarks", () => {
     await run(withTest2Handler(eff(100000)));
     const test2EndTime = performance.now();
     const test2Time = test2EndTime - test2StartTime;
-    const test3StartTime = performance.now();
-    await run(withTest3Handler(eff(100000)));
-    const test3EndTime = performance.now();
-    const test3Time = test3EndTime - test3StartTime;
     expect(test1Time).toBeLessThan(promiseTime);
     expect(test2Time).toBeLessThan(promiseTime);
-    expect(test3Time).toBeLessThan(promiseTime);
     console.log(
       "promise: ",
       promiseTime,
       "eff: ",
       test1Time,
       test2Time,
-      test3Time
     );
   });
 });

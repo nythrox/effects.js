@@ -9,7 +9,6 @@ type Action =
   | Effect
   | Handler
   | Resume
-  | Callback
   | SingleCallback;
 ```
 
