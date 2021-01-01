@@ -27,9 +27,10 @@ class Chain {
 Chain.prototype.chain = c;
 Chain.prototype.map = m;
 class Perform {
-  constructor(key, args) {
+  constructor(key, args, options) {
     this.key = key;
     this.args = args;
+    this.options = options;
   }
 }
 Perform.prototype.chain = c;
@@ -80,6 +81,10 @@ const map = (mapper) => (action) =>
   new Chain((val) => pure(mapper(val)), action);
 
 const effect = (key) => (...args) => new Perform(key, args);
+
+const options = (options) => (perform) => (
+  (perform.options = options), perform
+);
 
 const perform = (key, ...args) => new Perform(key, args);
 
@@ -188,20 +193,6 @@ class Interpreter {
                   this.run();
                 }
               }
-            },
-            // exec in program's scope
-            (execAction) => (then) => {
-              const ctx = {
-                prev: context.prev,
-                resume: context.resume,
-                // handlers: context.resume.programCtx.handlers, // TODO
-                action: execAction.chain((n) =>
-                  finishHandler({ callback: then, value: n })
-                ),
-              };
-              const i = new Interpreter(this.onDone, this.onError, ctx);
-              i.isClone = true;
-              i.run();
             }
           );
           break;
@@ -220,8 +211,12 @@ class Interpreter {
           break;
         }
         case Perform: {
-          const { args } = action;
-          const h = findHandlers(action.key)(context)(this.onError);
+          const { args, options } = action;
+          const h = findHandlers(action.key)(
+            options && context.resume && options.inContinuationScope
+              ? context.resume.programCtx
+              : context
+          )(this.onError);
           if (!h) return;
           const [handler, transformCtx] = h;
           const handlerAction = handler(...args);
@@ -349,10 +344,16 @@ const withIoPromise = handler({
   return: (value) => pure(Promise.resolve(value)),
   async: (iopromise) =>
     io(iopromise).chain((promise) =>
-      callback((_, done, execInProgramScope) => {
-        promise.then(done);
-        promise.catch((err) => {
-          execInProgramScope(raise(err))(done);
+      callback((exec, done) => {
+        promise.then(done).catch((err) => {
+          exec(
+            pipe(
+              raise(err),
+              options({
+                inContinuationScope: true,
+              })
+            )
+          )(done);
         });
       }).chain(resume)
     ),

@@ -79,7 +79,6 @@ run(program).then(console.log).catch(console.error)
 // logs 30
 ```
 
-
 #### callback
 > callback: (cb: (exec: (Action) => (execCb: (value) => void) => void, done: (value) => void) => void) => Action
 
@@ -108,6 +107,33 @@ const exampleCallbackAction = callback((exec, done) => {
 const exampleCallbackAction = singleCallback((done) => {
   Promise.resolve(20).then((value) => done("promise resolved: " + value));
 });
+```
+
+### options
+> options: (options: { inContinuationScope: boolean }) => (Perform) => Action
+
+Lets you set the options on how the `perform` effect is gonna behave.
+Setting `inContinuationScope` to `true` will perform the effect using the handler scope of the program that activated the handler (by yielding/performing) - only works inside a handle function
+```javascript
+// will raise an exception (perform raise) in the scope of the program that performed `test`, so that he can catch it by being able to wrap the `perform` and not the handler
+const test = effect("test")
+const withTest = handler({
+  test: () => {
+    pipe(
+      raise("something went wrong"),
+      options({
+        inContinuationScope: true
+      })
+    )
+  }
+})
+// handleError will catch the `raise` effect because it is being performed in its scope (with the inContinuationScope option)
+// if this option was deactivated (default), the handleError would not catch the `raise` effect unless it was put around the `withTest` that yields the `raise` effect
+const program = pipe(
+  test(),
+  handleError(() => pure("end")),
+  withTest
+)
 ```
 
 #### resume
