@@ -44,7 +44,8 @@ class Handler {
 Handler.prototype.chain = c;
 Handler.prototype.map = m;
 class Resume {
-  constructor(value) {
+  constructor(cont, value) {
+    this.cont = cont;
     this.value = value;
   }
 }
@@ -90,9 +91,10 @@ const perform = (key, ...args) => new Perform(key, args);
 
 const handler = (handlers) => (program) => new Handler(handlers, program);
 
-const resume = (value) => new Resume(value);
+const resume = (continuation, value) => new Resume(continuation, value);
 
 const callback = (callback) => new MultiCallback(callback);
+
 const singleCallback = (callback) => new SingleCallback(callback);
 
 const findHandlers = (key) => (context) => (onError) => {
@@ -138,7 +140,6 @@ class Interpreter {
           //   default: {}}
           this.context = {
             prev: context,
-            resume: context.resume,
             action: action.after,
           };
           break;
@@ -174,7 +175,6 @@ class Interpreter {
             (execAction) => (then) => {
               const ctx = {
                 prev: context.prev,
-                resume: context.resume,
                 action: execAction.chain((n) =>
                   finishHandler({ callback: then, value: n })
                 ),
@@ -204,7 +204,6 @@ class Interpreter {
             action: handlers.return
               ? program.chain(handlers.return)
               : program.chain(pure),
-            resume: context.resume,
           };
           context.transformCtx = transformCtx;
           this.context = transformCtx;
@@ -219,29 +218,28 @@ class Interpreter {
           )(this.onError);
           if (!h) return;
           const [handler, transformCtx] = h;
-          const handlerAction = handler(...args);
+          const handlerAction = handler(...args, {
+            transformCtx,
+            programCtx: context,
+          });
           const activatedHandlerCtx = {
             // 1. Make the activated handler returns to the *return transformation* parent,
             // and not to the *return transformation* directly (so it doesn't get transformed)
             prev: transformCtx.prev,
             action: handlerAction,
-            resume: {
-              transformCtx,
-              programCtx: context,
-            },
           };
           this.context = activatedHandlerCtx;
           break;
         }
         case Resume: {
           // inside activatedHandlerCtx
-          const { value } = action;
+          const { value, cont } = action;
           // context of the transformer, context of the program to continue
           if (!resume) {
             this.onError(Error("Tried to resume outside of a handler"));
             return;
           }
-          const { transformCtx, programCtx } = context.resume;
+          const { transformCtx, programCtx } = cont;
           // 3. after the transformation is done, return to the person chaining `resume`
           // /\ when the person chaining resume (activatedHandlerCtx) is done, it will return to the transform's parent
           transformCtx.prev = context.prev;
