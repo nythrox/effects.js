@@ -72,42 +72,44 @@ Here are a few examples of effects and handlers you can create
 
 ```
 
-You could also write your program without using generator functions using the pointfree api:
+You could also write your program without using generator functions using the monadic api, either the pointfree or chain version.
+
+Pointfree:
 
 ```javascript
   const programPointfree = pipe(
-    dependency('auth'),
-    chain(auth => pipe(
-       cps(window.onclick),
-       chain(mouseEvent =>
+    authenticatedRequest(),
+    chain(req => pipe(
+       getUser(req.user.id),
+       chain(user =>
           pipe(
-             getUser(auth.loggedInId),
-             chain(user => submitEvent(user, {type: 'clicked', details: mouseEvent}))
+             user.token ? pure(user.token) : raise("No tokwn found"),
+             chain(token => 
+               pipe(
+                  forEach(user.subscribers),
+                  chain(subscriber =>
+                     pipe(
+                        sendNotification({ type: 'clicked', subscriber, details: mouseEvent, user, token }),
+                        map(result => {user, subscriber, result})
+                     )
+                  )
+               )
+             )
           )
        )
     )
   )
-
-  pipe(
-    programPointfree,
-    Effect.do,
-    withAuthDependencies,
-    withForeach,
-    withSubscribe,
-    withAsync, // provide promise handler
-    run,
-    (stream) => stream.subscribe(console.log)
-  ) // after each click, logs ['logged with account account1', 'logged with account account2', ...]
 ```
 
-Or using the chain api
+Chainable api:
 
 ```javascript
-   const programChain = dependency('auth').
-      chain(auth => cps(window.onclick)
-         .chain(mouseEvent => getUser(auth.loggedInId)
-            .chain(user => 
-               submitEvent(user, {type: 'clicked', details: mouseEvent}))))
+   const programChain = authenticatedRequest()
+      .chain(req => getUser(req.user.id)
+      .chain(user => (user.token ? pure(user.token) : raise("No token found")
+      .chain(token => forEach(user.subscribers)
+      .chain(subscriber => sendNotification({ type: 'clicked', subscriber, details: mouseEvent, user, token })
+      .map(result => { user, subscriber, result} ))))))
 ```
 
 ### Exceptions
@@ -124,7 +126,7 @@ You can handle raised exceptions using a normal effect handler and simply not re
 ```javascript
 const program = raise(Error('something went wrong')
 const myCustomErrorHandler = handler({
-    exn: (error) => eff(function* () {
+    exn: (error, k) => eff(function* () {
         // we won't resume anything here, instead just return a different answer
         console.log(error)
         return "nothing went wrong! :)"
@@ -137,15 +139,15 @@ Or you can create a handler that takes a function
 ```javascript
 const trycatch = (program) => (oncatch) =>
   handler({
-    exn: (error) =>
+    exn: (error, k) =>
       eff(function* () {
         // we won't resume, instead we will call the provided function and return its result
-        const result = yield oncatch(error);
+        const result = yield oncatch(error, k);
         return result;
       }),
   })(program);
 
-const handledProgram = trycatch(program)((error) =>
+const handledProgram = trycatch(program)((error, k) =>
   eff(function* () {
     console.log(error);
     return "nothing went wrong! :)";
