@@ -11,6 +11,13 @@ Handlers are nested just like `try catch` blocks, and when an handler is perform
 
 Handlers can also `rethrow` the effect (by performing/`yielding` the effect again), or then can `resume` the computation and return a value to the function that performed the effect, or they can cancel (not resume) the computation and return a different value. Each time you `resume` the computation, you will get the result of resuming it, and can choose what to do with it (returning the result, perform other effects, transform the result and returning it).
 
+### Why?
+The coolest thing about algebraic effects is that due to scoped handlers and multiple resumptions, it can easily express multiple control flows (await/async, generators/iterators, exceptions, react hooks/suspense, coroutines, etc) and have them all work together harmoniously without having to write code to glue them together.
+
+It also helps you write testable code since using effects allows for dependency injection and easy testability (like redux-saga, but more powerful)
+
+For functional programming, Algebraic Effects lets you write pure, referentially transparent code in an imperative manner (using do notation) and allows you to combine monads (since most monads can be represented as effects).
+
 ### Examples
 
 #### Using Effects

@@ -1,25 +1,26 @@
 # Effects.js
 Algebraic effects in javascript with scoped handlers, multishot delimited continuations and do notation
 
-https://nythrox.github.io/effects.js
-
 ## How to start?
 You can try it out at <a href="https://codesandbox.io/s/effkit-8nkwc?file=/src/index.js">codesandbox</a>, or install it in npm:
 ```
 $ npm install effkit
 ```
 
+### Documentation
+You can read the docs <a href="https://nythrox.github.io/effects.js">here</a>. 
+
 ## What are Algebraic Effects?
-Algebraic effects are based on two primary concepts: effects and handlers. Effects are just a representation of an action that can be performed. Handlers will catch the performed effects and can choose to resume the continuation with a result (like a promise), resume the continuation multiple times (like a stream), or not resume at all and cancel the computation (like an exception). Handlers can also transform the result of the computation (into a promise, a stream, an array, etc). 
+Algebraic effects are based on two primary concepts: effects and handlers. Effects are just a representation of an action that can be performed. Handlers will catch the performed effects and can choose to resume the continuation with a result (like a promise), resume the continuation multiple times (like a array), or not resume at all and cancel the computation (like an exception). Handlers can also transform the result of the computation (into a promise, an array, etc). 
 
 To learn more about algebraic effects, see <a href="https://nythrox.github.io/effects.js/#/algeff">here</a>. 
 
 Algebraic effects bring a multitude of advantages: 
 - dependency injection
-- programming in direct-style (like async await - but for any data structure: streams, arrays, etc)
-- combining monads
-- maintaining pure (referentially transparent) code while working with effects
-- many control flow constructs can be expressed with only algebraic effects: async/await, coroutines/fibers, generators, exceptions, backtracking, react hooks/suspense, and more
+- programming in direct-style (like async await - but for any data structure: promises, arrays, generators, etc)
+- maintaining code pure (referentially transparent) while working with effects
+- many control flow constructs can be expressed with only algebraic effects: async/await, coroutines/fibers, generators, exceptions, backtracking, react hooks & suspense, and more
+- combining monads (almost any monad can be represented as an effect, which neatly allows it to be used together with other effects)
 
 It's easier to understand what it allows by seeing it in action:
 
@@ -55,8 +56,8 @@ Still, just like async/await code (or javascript code in general), it should not
 ### Stack-safety
 It's 100% stack-safe!
 
-### Assistance is wanted
-Feel free to create PRs or issues about bugs, suggestions, code review, questions, similar ideas, improvements, etc. You can also get in contact with <a href="https://github.com/nythrox"> me</a>, don't be shy to send a message!
+### Assistance is welcome
+Feel free to create PRs or issues about bugs, suggestions, code review, questions, similar projects, improvements, etc. You can also get in contact with <a href="https://github.com/nythrox"> me</a>, don't be shy to send a message!
    
 ### Inspirations
 #### [koka](https://github.com/koka-lang/koka)
