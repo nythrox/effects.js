@@ -42,12 +42,12 @@ const program = eff(function* () {
 
 ```javascript
 const withGetMessage = handler({
-  getMessageEffect: () => resume("This is the message"),
+  getMessageEffect: (k) => resume(k, "This is the message"),
 });
 
 const withWaitMs = handler({
-  waitMsEffect: (milliseconds) => {
-    return singleCallback((done) => setTimeout(done, milliseconds)).chain(() => resume())
+  waitMsEffect: (milliseconds, k) => {
+    return singleCallback((done) => setTimeout(done, milliseconds)).chain(() => resume(k))
   }
 });
 ```

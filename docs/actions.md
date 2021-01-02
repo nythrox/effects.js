@@ -4,12 +4,12 @@ The Action monad is the data structure we use to represent our program in Algebr
 
 ```typescript
 type Action =
-  | Pure
-  | Chain
   | Effect
   | Handler
+  | Chain
+  | Pure
   | Resume
-  | SingleCallback;
+  | Callback;
 ```
 
 You can use the following methods on any action:
@@ -73,12 +73,12 @@ const performed = plusOne(1);
 
 #### Handlers
 
-Handlers let you catch effects and choose what to do with the continuation
+Handlers let you catch effects and choose what to do with the continuation (k)
 
 ```javascript
    // withPlusOne: (action) => Action
    const withPlusOne = handler({
-      plusOne: (number) => resume(number + 1)
+      plusOne: (number, k) => resume(k, number + 1)
    })
    // program: Action<2>
    const program = withPlusOne(plusOne(1))  // wrap the program with the handler to handle it

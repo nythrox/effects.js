@@ -94,7 +94,7 @@ const findHandlers = (key) => (context) => (onError) => {
   }
   onError(Error("Handler not found: " + key.toString()));
 };
-// todo: callback that can return void (single) or return another callback
+
 class Interpreter {
   constructor(onDone, onError, context) {
     this.context = context;
@@ -192,7 +192,7 @@ class Interpreter {
           break;
         }
         default: {
-          this.onError(Error("invalid instruction: " + JSON.stringify(action)));
+          this.onError(Error("Invalid instruction: " + JSON.stringify(action)));
           return;
         }
       }
@@ -210,7 +210,6 @@ class Interpreter {
         case Chain: {
           this.context = {
             prev: prev.prev,
-            resume: prev.resume,
             action: prev.action.chainer(value),
           };
           break;
@@ -315,7 +314,6 @@ const run = (program) =>
       reject,
       {
         prev: undefined,
-        resume: undefined,
         action: pipe(program, withIoPromise, toEither, withIo),
       }
     ).run();

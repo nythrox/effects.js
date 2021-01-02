@@ -2,13 +2,13 @@
 
 Handlers are responsible for catching the effect call and resuming with a result (optional)
 To create a handler you can use the curried function `handler`, which receives as a first argument a map of handlers, and the second argument is the program to be handled
-
+The last argument `k` is the context of the continuation that you can use to resume the program. You can also save the `k` continuation for later to resume it another time. 
 ```javascript
 const withLog = handler({
   // optional return: (values) => eff(function* () { return value }),
-  logEffect: (...values) => eff(function* () {
+  logEffect: (...values, k) => eff(function* () {
     console.log(values);
-    return resume()
+    return resume(k)
   }),
 });
 ```
@@ -24,15 +24,15 @@ const withLog = handler({
   return: (value) => eff(function* () {
     return value;
   }),
-  logEffect: (...values) => eff(function* () {
+  logEffect: (...values, k) => eff(function* () {
     console.log(values);
-    const result = yield resume(undefined);
+    const result = yield resume(k, undefined);
     return result;
   }),
 });
 ```
 
-Since each handler can return a different value (with use of `return` or simply returning a different value from `resume()`), you can provide the handlers in different orders to change the behaviour of your program.
+Since each handler can return a different value (with use of `return` or simply returning a different value from `resume(k, value)`), you can provide the handlers in different orders to change the behaviour of your program.
 ```javascript
   // program: Action<Promise<Array<value>>>
   const program = withAsync(withForeach(stuff))
@@ -44,8 +44,9 @@ You can learn more about how this works in <a href="https://awesomereact.com/vid
 
 
 #### Resume
+> resume: (continuation, value) => Action
 
-Calling resume will resume the program with a value, and then return the result of the resumed program after it finishes running up to the point of the handler.
+Calling resume will resume the continuation with a value, and then return the result of the resumed program after it finishes running up to the point of the handler (that gave you the continuation).
 
 ### Return
 

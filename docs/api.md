@@ -42,13 +42,13 @@ This is the built-in error effect, you can create your own but it is recommended
   // logs "error"
 ``` 
 
-> handleError: (handler: (error) => Action) => (Action) => Action
+> handleError: (handler: (error) => Action, k: Continuation) => (Action) => Action
 
 This is a shorthand for creating a full error handler. It will catch any errors that are raised, and let you choose what to do with them.
 ```javascript
   const program = pipe(
     raise("error"),
-    handleError((err) => resume("nothing went wrong"))
+    handleError((err, k) => resume(k, "nothing went wrong"))
   )
   run(program).then(console.log).catch(console.error)
   // logs "nothing went wrong"
@@ -56,7 +56,7 @@ This is a shorthand for creating a full error handler. It will catch any errors 
 You can also just handle it like a effect
 ```javascript
   const myErrorHandler = handler({
-    error: (err) => resume("nothing went wrong")
+    error: (err, k) => resume(k, "nothing went wrong")
   })
   run(myErrorHandler(raise("error"))).then(console.log).catch(console.error)
   // logs "nothing went wrong"
@@ -116,10 +116,9 @@ const program = pipe(
 ```
 
 #### resume
-> resume: (value) => Action
+> resume: (continuation, value) => Action
 
-This Action can only be used in a handler
-It will resume the current effect call with a value, and returns the result of the resumed program after it finishes running up to the point of the handler
+Calling resume will resume the continuation with a value, and then return the result of the resumed program after it finishes running up to the point of the handler (that gave you the continuation)
 
 #### eff
 > eff: (generatorFunction) => Action
