@@ -10,7 +10,6 @@ Here are a few examples of effects and handlers you can create
    const getUser = effect("getUser")
    const sendNotification = effect("sendNotification")
 
-  // write your program in direct style using the generator do notation
   const onUserClick = eff(function* () {
      // get the current request from express
      const req = yield authenticatedRequest()
