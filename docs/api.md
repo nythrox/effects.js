@@ -1,7 +1,8 @@
 ### API
 
-### Pointfree vs Chainable version
-You can use the API in both ways, Pointfree or Chainable
+### Pointfree vs Chainable vs Generator version
+You can use the monadic API in both ways, Pointfree or Chainable.
+Using generator functions (do notation) will desugar each `yield` into a `chain` operation and wrap the returned value with `pure`.
 ```javascript
   const plusOne = effect('plusOne')
   const withPlusOne = handler({
@@ -15,11 +16,21 @@ You can use the API in both ways, Pointfree or Chainable
     chain(n => plusOne(n)),
     withPlusOne
   )
+
   // chainable
   const program = withPlusOne(
     pure(10)
     .map(number => number * 2)
     .chain(n => plusOne(n))
+  )
+
+  // generator function (do notation)
+  const program = withPlusOne(
+    eff(function*() {
+      const number = yield pure(10)
+      const timesTwo = number * 2
+      return yield plusOne(timesTwo)
+    })
   )
 ```
 
