@@ -71,7 +71,12 @@ Feel free to create PRs or issues about bugs, suggestions, code review, question
 ### Acknowledgments
 Thanks so much to the people who helped me with this library! Thanks to [Ohad Kammar](https://github.com/ohad) for answering all my questions on algebraic effects, and [Michael Arnaldi](https://github.com/mikearnaldi) for showing me how to implement ADT interpreters in order to achieve stack-safety in javascript
 
-### TODO:
+### Roadmap:
+- ~~Get rid of scope and resume limitations~~
+- ~~Create monadic API~~
+- ~~Add docs~~
+- ~~Make it 100% stack safe~~
+- ~~Benchmarks~~
 - Make a do notation babel plugin to compile the generator into chains
 - Make a typescript version
 - Expose API functions that work only with generators, and API functions that work with raw monads and continuations
