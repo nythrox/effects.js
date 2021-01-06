@@ -18,7 +18,7 @@ describe("defer actions for later", () => {
   it("should execute in the correct order", async () => {
     const defer = effect("defer");
     const log = effect("log");
-    
+
     const withDefer = handler({
       defer: (fn, k) => {
         return resume(k).chain((value) => fn.map(() => value));
@@ -98,51 +98,58 @@ describe("resume", () => {
   });
 });
 
-// describe("scheduler", () => {
-//   it("should execute in the correct order", async () => {
-//     ct("fork");
-//     const pause = effect("yield");
-//     const schedule = (program) => {
-//       const queue = [];
-//       const enqueue = (k) => {
-//         queue.push(k);
-//       };
-//       const dequeue = () => {
-//         if (queue.length) {
-//           return resume(queue.shift());
-//         }
-//         return pure();
-//       };
-//       const spawn = handler({
-//         return: () => dequeue(),
-//         yield: (k) => {
-//           enqueue(k);
-//           return dequeue();
-//         },
-//         fork: (program, k) => {
-//           enqueue(k);
-//           return spawn(program);
-//         },
-//       });
-//       return spawn(program);
-//     };
+describe("scheduler", () => {
+  it("should execute in the correct order", async () => {
+    const fork = effect("fork");
+    const yield_ = effect("yield");
+    const schedule = (program) => {
+      const queue = [];
+      const enqueue = (k) => {
+        queue.push(k);
+      };
+      const dequeue = () => {
+        if (queue.length) {
+          return resume(queue.shift());
+        }
+        return pure();
+      };
+      const spawn = handler({
+        return: () => dequeue(),
+        yield: (k) => {
+          enqueue(k);
+          return dequeue();
+        },
+        fork: (program, k) => {
+          enqueue(k);
+          return spawn(program);
+        },
+      });
+      return spawn(program);
+    };
+    const log = effect("log");
+    const withLog = handler({
+      log: (...msgs) => {
+        const k = msgs.pop();
+        console.log(...msgs);
+        return resume(k);
+      },
+    });
+    const tree = (id, depth) =>
+      eff(function* () {
+        yield log("starting with num", id);
+        if (depth > 0) {
+          yield log("forking num", id * 2 + 1);
+          yield fork(tree(id * 2 + 1, depth - 1));
+          yield log("forking num", id * 2 + 2);
+          yield fork(tree(id * 2 + 2, depth - 1));
+        } else {
+          yield log("yielding in num", id);
+          yield yield_();
+          yield log("resumed in number", id);
+        }
+        yield log("finishing number", id);
+      });
 
-//     const tree = (depth) =>
-//       eff(function* () {
-//         // yield log("starting with num", id);
-//         if (depth > 0) {
-//           // yield log("forking num", id * 2 + 1);
-//           yield fork(tree(depth - 1));
-//           // yield log("forking num", id * 2 + 2);
-//           yield fork(tree(depth - 1));
-//         } else {
-//           // yield log("yielding in num", id);
-//           yield pause();
-//           // yield log("resumed in number", id);
-//         }
-//         // yield log("finishing number", id);
-//         i++;
-//       });
-  
-//   });
-// });
+    run(withLog(schedule(tree(0, 3))));
+  });
+});

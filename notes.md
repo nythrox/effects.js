@@ -5,5 +5,6 @@ currently:
 handlerScopeCtx -> activatedHandlerCtx -> newHandlerScopeCtx -> transformCtx -> programCtx
 
 todo: 
-    - make initially and finally handlers
-    - add `use` 
+    - make initially and finally handlers from koka
+    - add `use` from koka
+    - add mask from koka
