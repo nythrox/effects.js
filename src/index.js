@@ -177,8 +177,8 @@ class Interpreter {
           // inside activatedHandlerCtx
           const { value, cont } = action;
           // context of the transformer, context of the program to continue
-          if (!resume) {
-            this.onError(Error("Tried to resume outside of a handler"));
+          if (!cont || !(cont && cont.transformCtx && cont.programCtx)) {
+            this.onError(Error("Missing continuation parameter in resume"));
             return;
           }
           const { transformCtx, programCtx } = cont;
