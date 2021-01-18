@@ -4,6 +4,10 @@ activatedHandlerCtx -> transformCtx -> handlerScopeCtx -> newHandlerScopeCtx -> 
 currently:
 handlerScopeCtx -> activatedHandlerCtx -> newHandlerScopeCtx -> transformCtx -> programCtx
 
+eff lang:
+activatedHandlerCtx -> newHandlerScopeCtx -> transformCtx -> handlerScopeCtx -> programCtx
+
+
 todo: - make initially and finally handlers from koka - add `use` from koka - add mask from koka
 
 solution to context problem:

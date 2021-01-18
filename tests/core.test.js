@@ -115,14 +115,8 @@ describe("resume", () => {
 //       };
 //       const spawn = handler({
 //         return: () => dequeue(),
-//         yield: (k) => {
-//           enqueue(k);
-//           return dequeue();
-//         },
-//         fork: (program, k) => {
-//           enqueue(k);
-//           return spawn(program);
-//         },
+//         yield: (k) => (enqueue(k), dequeue()),
+//         fork: (program, k) => (enqueue(k), spawn(program))
 //       });
 //       return spawn(program);
 //     };
