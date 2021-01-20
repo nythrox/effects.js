@@ -3,7 +3,6 @@ const {
   handler,
   resume,
   run,
-  singleCallback,
   pipe,
   pure,
 } = require("../src");

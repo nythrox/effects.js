@@ -107,6 +107,7 @@ class Interpreter {
     while (this.context) {
       const action = this.context.action;
       const context = this.context;
+      // console.log(context, context.action);
       switch (action.constructor) {
         case Chain: {
           // const nested = action.after;
@@ -145,11 +146,16 @@ class Interpreter {
           const { handlers, program } = action;
           const transformCtx = {
             prev: context,
+            action: program,
+          };
+          const lastPrev = context.prev;
+          context.prev = {
+            prev: lastPrev,
             action: handlers.return
               ? program.chain(handlers.return)
               : program.chain(pure),
           };
-          context.transformCtx = transformCtx;
+          context.transformCtx = context.prev;
           this.context = transformCtx;
           break;
         }
@@ -318,7 +324,6 @@ const run = (program) =>
       }
     ).run();
   });
-
 module.exports = {
   flow,
   pipe,

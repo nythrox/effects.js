@@ -2,9 +2,6 @@ should be:
 activatedHandlerCtx -> transformCtx -> handlerScopeCtx -> newHandlerScopeCtx -> programCtx
 
 currently:
-handlerScopeCtx -> activatedHandlerCtx -> newHandlerScopeCtx -> transformCtx -> programCtx
-
-eff lang:
 activatedHandlerCtx -> newHandlerScopeCtx -> transformCtx -> handlerScopeCtx -> programCtx
 
 
