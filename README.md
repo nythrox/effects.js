@@ -72,7 +72,7 @@ Feel free to create PRs or issues about bugs, suggestions, code review, question
 #### [forgefx](https://github.com/briancavalier/forgefx)
 
 ### Acknowledgments
-Thanks so much to the people who helped me with this library! Thanks to [Ohad Kammar](https://github.com/ohad) for answering all my questions on algebraic effects, and [Michael Arnaldi](https://github.com/mikearnaldi) for showing me how to implement ADT interpreters in order to achieve stack-safety in javascript
+Thanks so much to the people who helped me with this library! Thanks to [Ohad Kammar](https://github.com/ohad) for answering all my questions on algebraic effects, and [Michael Arnaldi](https://github.com/mikearnaldi) for showing me how to implement custom interpreters in order to achieve stack-safety
 
 ### Roadmap:
 - ~~Get rid of scope and resume limitations~~
