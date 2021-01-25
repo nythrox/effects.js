@@ -7,6 +7,7 @@ Effects should be used to model anything that could make a function impure - IO 
 
 To create an effect, you can use the curried `effect` function with the effects' key
 > effect: (key) => (...args) => Action
+
 The `effect` function receives an argument with the effects key, and then the value to be passed onto the handler 
 ```javascript
 const log = effect('logEffect')
