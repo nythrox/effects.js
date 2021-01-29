@@ -69,7 +69,7 @@ const handledProgram = withGetMessage(withWaitMs(program));
 
 ### Learn more about Algebraic Effects
 
-You can read more about algebraic effects in the links bellow, or see some examples <a href="https://nythrox.github.io/effects.js/#/basics?id=learn-more-about-algebraic-effects">here</a>:
+You can read more about algebraic effects in the links bellow
 
 Why PLs Should Have Effect Handlers
 https://robotlolita.me/diary/2018/10/why-pls-need-effects/
