@@ -11,7 +11,7 @@ $ npm install effkit
 You can read the docs <a href="https://nythrox.github.io/effects.js">here</a>. 
 
 ## What are Algebraic Effects?
-Algebraic effects are based on two primary concepts: effects and handlers. Effects are just a representation of an action that can be performed. Handlers will catch the performed effects and can choose to resume the continuation with a result (like a promise), resume the continuation multiple times (like a array), or not resume at all and cancel the computation (like an exception). Handlers can also transform the result of the computation (into a promise, an array, etc). 
+Algebraic effects are based on two primary concepts: effects and handlers. Effects are just a representation of an action that can be performed. Handlers will catch the performed effects and can choose to resume the program (continuation) with a result (like a promise), resume the continuation multiple times (like a forEach), or not resume at all and cancel the computation (like an exception). Handlers can also transform the result of the computation (into a promise, an array, etc). 
 
 To learn more about algebraic effects, see <a href="https://nythrox.github.io/effects.js/#/algeff">here</a>. 
 
@@ -20,7 +20,7 @@ Algebraic effects bring a multitude of advantages:
 - programming in direct-style (like async await - but for any data structure: promises, arrays, generators, etc)
 - maintaining code pure (referentially transparent) while working with effects
 - many control flow constructs can be expressed with only algebraic effects: async/await, coroutines/fibers, generators, exceptions, backtracking, react hooks & suspense, and more
-- combining monads (almost any monad can be represented as an effect, which neatly allows it to be used together with other effects)
+- combining monads (almost any monad can be represented as an effect, which allows them to be used/chained together)
 
 It's easier to understand what it allows by seeing it in action:
 
@@ -50,7 +50,7 @@ It's easier to understand what it allows by seeing it in action:
 All of the effects (request, getUser, sendNotification, etc) are highly testable, and can be replaced with testing/production/alternative versions.
 
 ### This library
-This library brings a algebraic effects implementation to Javascript using an `Action` monad that you can use directly or use generator functions as a "do notation" to make the code look idiomatic to javascript. It is based on languages like Koka and Eff and tries to bring all the algebraic effects features they have.
+This library brings a algebraic effects implementation to Javascript using an `Action` monad that you can use directly or use generator functions as a "do notation" to make the code look idiomatic to javascript. It is based on the languages Koka and Eff, and tries to bring all the algebraic effects features they have.
 
 ### Performance
 See <a href="https://github.com/nythrox/effects.js/blob/master/tests/benchmark.test.js">benchmarks</a>, it is expected to perform better than using native Promises (although they can't really be compared, because Algebraic Effects completely encapsulates Promises and is infinitely more extensible). 
