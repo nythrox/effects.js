@@ -129,52 +129,44 @@ describe("adding new handlers in handlers", () => {
   });
 });
 
-// describe("scheduler", () => {
-//   it("should execute in the correct order", async () => {
-//     const fork = effect("fork");
-//     const yield_ = effect("yield");
-//     const schedule = (program) => {
-//       const queue = [];
-//       const enqueue = (k) => {
-//         queue.push(k);
-//       };
-//       const dequeue = () => {
-//         if (queue.length) {
-//           return resume(queue.shift());
-//         }
-//         return pure();
-//       };
-//       const spawn = handler({
-//         return: () => dequeue(),
-//         yield: (k) => (enqueue(k), dequeue()),
-//         fork: (program, k) => (enqueue(k), spawn(program))
-//       });
-//       return spawn(program);
-//     };
-//     const log = effect("log");
-//     const withLog = handler({
-//       log: (...msgs) => {
-//         const k = msgs.pop();
-//         console.log(...msgs);
-//         return resume(k);
-//       },
-//     });
-//     const tree = (id, depth) =>
-//       eff(function* () {
-//         yield log("starting with num", id);
-//         if (depth > 0) {
-//           yield log("forking num", id * 2 + 1);
-//           yield fork(tree(id * 2 + 1, depth - 1));
-//           yield log("forking num", id * 2 + 2);
-//           yield fork(tree(id * 2 + 2, depth - 1));
-//         } else {
-//           yield log("yielding in num", id);
-//           yield yield_();
-//           yield log("resumed in number", id);
-//         }
-//         yield log("finishing number", id);
-//       });
+// // from https://kcsrk.info/ocaml/multicore/2015/05/20/effects-multicore/
+// // codesandbox (js) https://codesandbox.io/s/effkit-testing-yhp7t?file=/src/index.js
 
-//     run(withLog(schedule(tree(0, 2))));
+// const fork = effect("fork")
+// const yield_ = effect("yield")
+// const schedule = (program) => {
+//   const queue = []
+//   const enqueue = (k) => queue.push(k)
+//   const dequeue = () => queue.length ? resume(queue.shift()) : pure()
+//   const spawn = handler({
+//     return: () => dequeue(),
+//     yield: (k) => (enqueue(k), dequeue()),
+//     fork: (program, k) => (enqueue(k), spawn(program))
 //   });
+//   return spawn(program);
+// };
+
+// const withLog = handler({
+//   log: (...msgs) => {
+//     const k = msgs.pop();
+//     console.log(...msgs);
+//     return resume(k);
+//   }
 // });
+// const tree = (id, depth) =>
+//   eff(function* () {
+//     console.log("starting with num", id)
+//     if (depth > 0) {
+//       console.log("forking num", id * 2 + 1)
+//       yield fork(tree(id * 2 + 1, depth - 1))
+//       console.log("forking num", id * 2 + 2)
+//       yield fork(tree(id * 2 + 2, depth - 1))
+//     } else {
+//       console.log("yielding in num", id)
+//       yield yield_();
+//       console.log("resumed in number", id)
+//     }
+//     console.log("finishing number", id)
+//   });
+
+// run(withLog(schedule(tree(0, 2))));
