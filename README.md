@@ -50,7 +50,7 @@ It's easier to understand what it allows by seeing it in action:
 All of the effects (request, getUser, sendNotification, etc) are highly testable, and can be replaced with testing/production/alternative versions.
 
 ### This library
-This library brings a algebraic effects implementation to Javascript using an `Action` monad that you can use directly or use generator functions as a "do notation" to make the code look idiomatic to javascript. It is based on the languages Koka and Eff, and tries to bring all the algebraic effects features they have.
+This library brings a algebraic effects implementation to Javascript using an `Action` monad, which means you can use the monadic API (map, chain, of), or use generator functions as a "do notation" to make the code look more natural. It is based on the languages Koka and Eff, and tries to bring all the algebraic effects features they have.
 
 ### Performance
 See <a href="https://github.com/nythrox/effects.js/blob/master/tests/benchmark.test.js">benchmarks</a>, it is expected to perform better than using native Promises (although they can't really be compared, because Algebraic Effects completely encapsulates Promises and is infinitely more extensible). 
