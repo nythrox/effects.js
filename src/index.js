@@ -302,7 +302,7 @@ const withIoPromise = handler({
           ? resume(k, res.value)
           : options({
               scope: k,
-            })(raise(res.value)).chain((e) => resume(k, e))
+            })(raise(res.error)).chain((e) => resume(k, e))
       )
     ),
 });
