@@ -51,12 +51,12 @@ Handle them later
 
 ```javascript
 express.post('actions/user-clicked', (req, res) => {
- const withDependencies = handle(onUserClick, {
+ const withDependencies = handler({
    getAuth: () => resume(req.auth),
    error: (e) => e instanceof MissingTokenError && cachedUser ? resume(cachedUser) : raise(e),
    sendNotification: (subscriber, type, data) => sendFirebaseNotification(...),
  })
- run(withDependencies)
+ run(withDependencies(onUserClick))
 })
 ```
 
