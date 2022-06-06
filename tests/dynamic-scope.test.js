@@ -1,25 +1,36 @@
-const { run, pure, effect, handler, eff, resume } = require("../src");
+// const { run, pure, effect, handler, eff, resume } = require("../src");
 
+
+// TODO: inserting a new Handler() around Resume() should make it the most recent handler in the scope
 describe("dynamic scope", () => {
   it("shoud handle with the right handlers and return in the correct order", async () => {
-    const test = effect("test1");
-    const handleTest1 = handler({
-      return: (val) => pure(val + " -> handleTest1"),
-      test1: (k) => handleTest1SecondImpl(resume(k, 2)),
-    });
-    const handleTest1SecondImpl = handler({
-      test1: (k) => resume(k, 10),
-      return: (val) => pure(val + " -> handleTest1SecondImpl"),
-    });
-    const res = await run(
-      handleTest1(
-        eff(function* () {
-          const first = yield test();
-          const second = yield test();
-          return [first, second, second].toString();
-        })
-      )
-    );
-    expect(res).toEqual("2,10,10 -> handleTest1 -> handleTest1SecondImpl");
+//     const message = effect();
+//     const logs1 = []
+//     const logs2 = []
+//     const handleMessage1 = handler({
+//       return: (value) => pure(`(${value} into ${logs1})`),
+//     //   [message]: (value, k) => (logs1.push(value), resume(k, value)),
+//     name: 1,
+//       [message]: (value, k) => (logs1.push(value), handleMessage2(resume(k, value))),
+//     });
+//     const handleMessage2 = handler({
+//         name: 2,
+//       return: (value) => pure(`(${value} into ${logs2})`),
+//       [message]: (value, k) => (logs2.push(value), resume(k, value)),
+//     });
+//     const res = await run(
+//       handleMessage1(
+//         eff(function* () {
+//           yield message(1)
+//           console.log('----')
+//           yield message(2)
+//         //   yield message(3)
+//         //   yield message(4)
+//         })
+//       )
+//     );
+//     console.log(res)
+//     console.log(logs1, logs2)
+//     // expect(res).toEqual("(handleMessage2 (handleMessage1 1))");
   });
 });

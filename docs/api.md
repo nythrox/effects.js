@@ -103,7 +103,7 @@ const exampleCallbackAction = singleCallback((done) => {
 > options: (options: { inContinuationScope: boolean }) => (Perform) => Action
 
 Lets you set the options on how the `perform` effect is gonna behave.
-Setting `inContinuationScope` to `true` will perform the effect using the handler scope of the program that activated the handler (by yielding/performing) - only works inside a handle function
+Setting `inContinuation` to `true` will perform the effect using the handler scope of the program that activated the handler (by yielding/performing) - only works inside a handle function
 ```javascript
 // will raise an exception (perform raise) in the scope of the program that performed `test`, so that he can catch it by being able to wrap the `perform` and not the handler
 const test = effect("test")

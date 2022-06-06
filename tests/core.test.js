@@ -129,6 +129,20 @@ describe("adding new handlers in handlers", () => {
   });
 });
 
+describe("effects without a named key", () => {
+  it("should function correctly", async () => {
+    const message = effect()
+    const program = message("hello world")
+    const withMessage = handler({
+      [message]: (msg, k) => {
+        expect(msg).toEqual("hello world");
+        return resume(k)
+      }
+    })
+    run(withMessage(program))
+  })
+})
+
 // // from https://kcsrk.info/ocaml/multicore/2015/05/20/effects-multicore/
 // // codesandbox (js) https://codesandbox.io/s/effkit-testing-yhp7t?file=/src/index.js
 

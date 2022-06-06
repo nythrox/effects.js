@@ -13,15 +13,15 @@ const test3 = effect("test3");
 
 const withTest1 = handler({
   return: (val) => pure(val + "f1"),
-  test1: (value, k) => resume(k, value + "!").map((val) => "~" + val + "~"),
+  test1: (value, k) => resume(k, value + "!").map((val) => `~${val}~`),
 });
 const withTest2 = handler({
   return: (val) => pure(val + "f2"),
-  test2: (value, k) => resume(k, value + "!").map((val) => "+" + val + "+"),
+  test2: (value, k) => resume(k, value + "!").map((val) => `+${val}+`),
 });
 const withTest3 = handler({
   return: (val) => pure(val + "f3"),
-  test3: (value, k) => resume(k, value + "!").map((val) => "(" + val + ")"),
+  test3: (value, k) => resume(k, value + "!").map((val) => `(${val})`),
 });
 
 const programhandlerscopedtest = test1("hi0").chain((hi1) =>

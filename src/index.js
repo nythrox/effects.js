@@ -66,11 +66,15 @@ const chain = (chainer) => (action) => new Chain(chainer, action);
 const map = (mapper) => (action) =>
   new Chain((val) => pure(mapper(val)), action);
 
-const effect = (key) => (...args) => new Perform(key, args);
+const effect = (key) => {
+  const fn = (...args) => new Perform(fn, args, { key: key })
+  return fn
+};
 
-const options = (options) => (perform) => (
-  (perform.options = options), perform
-);
+const options = (options) => (perform) => {
+  perform.options.scope = options.scope
+  return perform
+};
 
 const perform = (key, ...args) => new Perform(key, args);
 
@@ -80,19 +84,19 @@ const resume = (continuation, value) => new Resume(continuation, value);
 
 const singleCallback = (callback) => new SingleCallback(callback);
 
-const findHandlers = (key) => (context) => (onError) => {
+const findHandlers = (key, alias) => (context) => (onError) => {
   let curr = context;
   while (curr) {
     const action = curr.action;
     if (curr.action.constructor === Handler) {
-      const handler = action.handlers[key];
+      const handler = action.handlers[key] ?? action.handlers[alias];
       if (handler) {
         return [handler, curr.transformCtx];
       }
     }
     curr = curr.prev;
   }
-  onError(Error("Handler not found: " + key.toString()));
+  onError(Error("Handler not found: " + alias ?? key));
 };
 
 class Interpreter {
@@ -161,7 +165,7 @@ class Interpreter {
         }
         case Perform: {
           const { args, options } = action;
-          const h = findHandlers(action.key)(
+          const h = findHandlers(action.key, options.key)(
             options && options.scope ? options.scope.programCtx : context
           )(this.onError);
           if (!h) return;
@@ -171,7 +175,7 @@ class Interpreter {
             programCtx: context,
           });
           const activatedHandlerCtx = {
-            // 1. Make the activated handler returns to the *return transformation* parent,
+            // 1. Make the activated handler return to the *return transformation* parent,
             // and not to the *return transformation* directly (so it doesn't get transformed)
             prev: transformCtx.prev,
             action: handlerAction,
@@ -301,8 +305,8 @@ const withIoPromise = handler({
         res.success
           ? resume(k, res.value)
           : options({
-              scope: k,
-            })(raise(res.error)).chain((e) => resume(k, e))
+            scope: k,
+          })(raise(res.error)).chain((e) => resume(k, e))
       )
     ),
 });
