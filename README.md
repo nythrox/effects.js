@@ -25,6 +25,11 @@ Algebraic effects bring a multitude of advantages:
 It's easier to understand what it allows by seeing it in action:
 
 ```javascript
+  // create your effects
+  const getAuth = effect()
+  const getUser = effect()
+  const sendNotification = effect()
+  
   // write your program in direct style using the generator do notation
   const onUserClick = eff(function* () {
      // get the current request from express
@@ -43,22 +48,28 @@ It's easier to understand what it allows by seeing it in action:
      const result = yield sendNotification(subscriber, 'clicked', { details: mouseEvent, user, token }) 
 
      return { user, subscriber, result }
-  }) // returns [{ user, subscriber1, result1 }, { user, subscriber2, result2 }, ...], 
-     // the return value depends on how you use the handlers 
+  }) 
+
+  // handle your effects   
+  express.post('actions/user-clicked', async (req, res) => {
+   const withDependencies = handler({
+     getAuth: () => resume(req.auth),
+     getUser: (id) => getFirebaseUser(...),
+     sendNotification: (subscriber, type, data) => sendFirebaseNotification(...),
+   })
+   const result = await run(pipe(
+     onUserClick,
+     handleError((e) => e instanceof MissingTokenError && cachedUser ? resume(cachedUser, k) : raise(e)) // recover with CachedUser if possible
+     withDependencies,
+     withForEach,
+   ))
+   // the final value depends on how you order the handlers 
+   console.log(result) // [{ user, subscriber1, result1 }, { user, subscriber2, result2 }, ...], 
+   
+   res.send(result)
+  })
 ```
 
-Handle them later
-
-```javascript
-express.post('actions/user-clicked', (req, res) => {
- const withDependencies = handler({
-   getAuth: () => resume(req.auth),
-   error: (e) => e instanceof MissingTokenError && cachedUser ? resume(cachedUser) : raise(e),
-   sendNotification: (subscriber, type, data) => sendFirebaseNotification(...),
- })
- run(withDependencies(onUserClick))
-})
-```
 
 All of the effects (request, getUser, sendNotification, etc) are highly testable, and can be replaced with testing/production/alternative versions.
 
