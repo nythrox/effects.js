@@ -28,13 +28,13 @@ It's easier to understand what it allows by seeing it in action:
   // write your program in direct style using the generator do notation
   const onUserClick = eff(function* () {
      // get the current request from express
-     const auth = yield request() 
+     const auth = yield getAuth() 
 
      // await for async call
      const user = yield getUser(auth.user.id) 
      
      // throw recoverable exception
-     const token = user.token || yield raise("No token found")
+     const token = user.token || yield raise(new MissingTokenError())
      
      // for each subscriber in the users list of subscribers
      const subscriber = yield forEach(user.subscribers) 
@@ -45,6 +45,19 @@ It's easier to understand what it allows by seeing it in action:
      return { user, subscriber, result }
   }) // returns [{ user, subscriber1, result1 }, { user, subscriber2, result2 }, ...], 
      // the return value depends on how you use the handlers 
+```
+
+Handle them later
+
+```javascript
+express.post('actions/user-clicked', (req, res) => {
+ const withDependencies = handler({
+   getAuth: () => resume(req.auth),
+   error: (e) => e instanceof MissingTokenError && cachedUser ? resume(cachedUser) : raise(e),
+   sendNotification: (subscriber, type, data) => sendFirebaseNotification(...),
+ })
+ run(withDependencies(onUserClick))
+})
 ```
 
 All of the effects (request, getUser, sendNotification, etc) are highly testable, and can be replaced with testing/production/alternative versions.
