@@ -3,6 +3,8 @@
 }
  function flow(ab, bc, cd, de, ef, fg, gh, hi, ij) {
   switch (arguments.length) {
+    case 0:
+      return id;
     case 1:
       return ab;
     case 2:
@@ -37,8 +39,12 @@
       return function () {
         return ij(hi(gh(fg(ef(de(cd(bc(ab.apply(this, arguments)))))))));
       };
+    default:
+      const init_val = ab.apply(this, arguments);
+       return function () {
+        return Array.from(arguments).slice(1).reduce((acc, f) => f(acc), init_val);
+       }
   }
-  return;
 }
  function pipe(
   a,
@@ -62,7 +68,9 @@
   rs,
   st
 ) {
-  switch (arguments.length) {
+   switch (arguments.length) {
+     case 0:
+        return;
     case 1:
       return a;
     case 2:
@@ -111,8 +119,9 @@
           qr(pq(op(no(mn(lm(kl(jk(ij(hi(gh(fg(ef(de(cd(bc(ab(a)))))))))))))))))
         )
       );
+     default:
+       return Array.from(arguments).reduce((acc, f) => f(acc));
   }
-  return;
 }
 
  const makeMultishotGeneratorDo = (of) => (chain) => (generatorFun) => {
